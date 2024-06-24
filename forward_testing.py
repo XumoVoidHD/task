@@ -212,7 +212,7 @@ class Strategy:
 
     def execute_strategy(self):
         run = 0
-        hours = 120
+        hours = 60*10
         wrap.place_order(symbol='BTCUSDT', side='BUY', type='MARKET', quantity=0.03)
         while run != hours:
             self.data = self.get_data()
