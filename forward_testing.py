@@ -76,7 +76,7 @@ class Broker:
         signature = self.generate_signature(query_string)
         params["signature"] = signature
 
-        response = requests.post(self.url + self.api_call, headers=headers, params=params)
+        response = requests.post(self.url + self.api_call, headers=headers, data=params)
         return response
 
     def get_quantity(self, symbol=None):
