@@ -5,6 +5,7 @@ import hmac
 import uuid
 import json
 import uuid
+import urllib.parse
 
 
 class Broker:
@@ -32,6 +33,7 @@ class Broker:
             #response = req.request(method, self.url + endPoint, headers=headers, data=payload)
         else:
             response = req.request(method, self.url + endPoint + "?" + str(payload), headers=headers)
+
         return response
         # print(response.text)
         # print(response.headers)
@@ -66,7 +68,7 @@ class Broker:
         params = json.dumps(params)
         res = self.generate_response(endPoint=endpoint, method=method, payload=params)
 
-        return res
+        return res.json()
 
     def sell(self, symbol, orderType, qty, price= 0, category= "spot", timeInForce= "GTC", orderLinkId=False):
         endpoint="/v5/order/create"
@@ -76,7 +78,7 @@ class Broker:
             "symbol": symbol,
             "side": "Sell",
             "orderType": orderType,
-            "qty": "50",
+            "qty": f"{qty}",
             "marketUnit": "quoteCoin",
             #"reduceOnly": "true",
             #"closeOnTrigger": "true",
@@ -91,20 +93,61 @@ class Broker:
         params = json.dumps(params)
         res = self.generate_response(endPoint=endpoint, method=method, payload=params)
 
-        return res
+        return res.json()
 
-    def intstrument_info(self, category="spot"):
-        endpoint = "/v5/account/wallet-balance"
-        method = "GET"
-        # params = {
-        #     "category": "spot",
-        #     'symbol': "BTCUSDT"
-        # }
-        params='category=spot&symbol=BTCUSDT'
+    def close_positions(self, symbol, category, orderType, orderLinkId=False):
+        endpoint="/v5/order/create"
+        method = "POST"
+        info = self.position_info(symbol)
+        size = info[0]
+        type = info[1]
 
+        params = {
+            "category": category,
+            "symbol": symbol,
+            "orderType": orderType,
+            "qty": f"{size}",
+            "marketUnit": "quoteCoin",
+            #"reduceOnly": "true",
+            #"closeOnTrigger": "true",
+            # "price": str(price),
+            #"timeInForce": timeInForce
+        }
+
+        if orderLinkId:
+            orderLinkId = uuid.uuid4().hex
+            params['orderLinkId'] = orderLinkId
+
+        if type == "Buy":
+            params['side'] = "Sell"
+        else:
+            params['side'] = "Buy"
+
+        params = json.dumps(params)
         res = self.generate_response(endPoint=endpoint, method=method, payload=params)
 
-        return res
+        return res.json()
+
+
+    def positions(self, category="linear", symbol="BTCUSDT"):
+        endpoint = "/v5/position/list"
+        method = "GET"
+        params = {
+            "category": f"{category}",
+            'symbol': f"{symbol}"
+        }
+        query_string = '&'.join([f"{key}={params[key]}" for key in params])
+
+        res = self.generate_response(endPoint=endpoint, method=method, payload=query_string).json()
+
+        return res['result']['list'][0]
+
+    def position_info(self, symbol):
+        res = self.positions(symbol=symbol)
+
+        return res['size'], res['side']
+
+
 
 
 if __name__ == "__main__":
@@ -121,8 +164,10 @@ if __name__ == "__main__":
     # print(type(params))
     # wrap.generate_response(endpoint, method, params, "Create")
 
-    print(wrap.buy(symbol="BTCUSDT", orderType="MARKET", qty=100, category="spot", timeInForce="GTG").json())
-    print(wrap.intstrument_info().json())
+    #print(wrap.buy(symbol="BTCUSDT", orderType="MARKET", qty=1, category="linear", timeInForce="GTG"))
+    # print(wrap.sell(symbol="BTCUSDT", orderType="MARKET", qty=1, category="linear", timeInForce="GTG"))
+    # print(wrap.positions(category="linear"))
+    print(wrap.close_positions(symbol="BTCUSDT", category="linear", orderType="MARKET"))
     # session = HTTPS("https://api.bybit.com", api_key=api_key, api_secret=secret_key)
     # session.get_wallet_balance()
 
