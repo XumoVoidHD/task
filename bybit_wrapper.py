@@ -1,11 +1,13 @@
 import requests as req
 import time
+from datetime import datetime
 import hashlib
 import hmac
 import uuid
 import json
 import uuid
 import urllib.parse
+import pandas as pd
 
 
 class Broker:
@@ -147,6 +149,64 @@ class Broker:
 
         return res['size'], res['side']
 
+    def get_balance(self):
+        endpoint = "/v5/account/wallet-balance"
+        method = "GET"
+        params = {
+            "accountType": "UNIFIED",
+        }
+        query_string = '&'.join([f"{key}={params[key]}" for key in params])
+
+        res = self.generate_response(endPoint=endpoint, method=method, payload=query_string).json()
+
+        return f"$ {res['result']['list'][0]['totalAvailableBalance']}"
+
+    def get_server_time(self):
+        endpoint = "/v5/market/time"
+        method = "GET"
+        params = None
+
+        res = self.generate_response(endPoint=endpoint, method=method, payload=params).json()
+
+        time_sec = int(res['result']['timeSecond'])
+        struct_time = time.gmtime(time_sec)
+        dt = datetime.fromtimestamp(time.mktime(struct_time))
+        readable_time = dt.strftime("%Y-%m-%d %H:%M:%S")
+
+        return readable_time
+
+    def get_klines(self, category, symbol, interval=120, limit=100):
+        endpoint = "/v5/market/kline"
+        method = "GET"
+        params = {
+            "category": f"{category}",
+            "symbol": f"{symbol}",
+            "interval": f"{interval}",
+            "limit": f"{limit}"
+        }
+
+        query_string = '&'.join([f"{key}={params[key]}" for key in params])
+
+        res = self.generate_response(endPoint=endpoint, method=method, payload=query_string).json()
+        print(res)
+        data = []
+        for entry in res['result']['list']:
+            temp_time = int(entry[0])/1000
+            struct_time = time.gmtime(temp_time)
+            dt = datetime.fromtimestamp(time.mktime(struct_time))
+            readable_time = dt.strftime("%Y-%m-%d %H:%M:%S")
+
+            temp = {
+                "Date & Time": f"{readable_time}",
+                "Open": float(entry[1]),
+                "High": float(entry[2]),
+                "Low": float(entry[3]),
+                "Close": float(entry[4]),
+            }
+            data.append(temp)
+        df = pd.DataFrame(data)
+
+        return df
 
 
 
@@ -167,7 +227,10 @@ if __name__ == "__main__":
     #print(wrap.buy(symbol="BTCUSDT", orderType="MARKET", qty=1, category="linear", timeInForce="GTG"))
     # print(wrap.sell(symbol="BTCUSDT", orderType="MARKET", qty=1, category="linear", timeInForce="GTG"))
     # print(wrap.positions(category="linear"))
-    print(wrap.close_positions(symbol="BTCUSDT", category="linear", orderType="MARKET"))
+    # print(wrap.close_positions(symbol="BTCUSDT", category="linear", orderType="MARKET"))
+    # print(wrap.get_balance())
+    print(wrap.get_server_time())
+    print(wrap.get_klines(category="linear", symbol="BTCUSDT"))
     # session = HTTPS("https://api.bybit.com", api_key=api_key, api_secret=secret_key)
     # session.get_wallet_balance()
 
