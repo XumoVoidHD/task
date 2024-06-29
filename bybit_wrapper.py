@@ -31,8 +31,8 @@ class Broker:
         }
 
         if (method == "POST"):
-            response = req.post(self.url + endPoint, headers=headers, data=payload)
-            #response = req.request(method, self.url + endPoint, headers=headers, data=payload)
+            #response = req.post(self.url + endPoint, headers=headers, data=payload)
+            response = req.request(method, self.url + endPoint, headers=headers, data=payload)
         else:
             response = req.request(method, self.url + endPoint + "?" + str(payload), headers=headers)
 
@@ -68,6 +68,7 @@ class Broker:
             params['orderLinkId'] = orderLinkId
 
         params = json.dumps(params)
+        print(params)
         res = self.generate_response(endPoint=endpoint, method=method, payload=params)
 
         return res.json()
@@ -129,7 +130,6 @@ class Broker:
         res = self.generate_response(endPoint=endpoint, method=method, payload=params)
 
         return res.json()
-
 
     def positions(self, category="linear", symbol="BTCUSDT"):
         endpoint = "/v5/position/list"
@@ -224,13 +224,13 @@ if __name__ == "__main__":
     # print(type(params))
     # wrap.generate_response(endpoint, method, params, "Create")
 
-    #print(wrap.buy(symbol="BTCUSDT", orderType="MARKET", qty=1, category="linear", timeInForce="GTG"))
+    print(wrap.buy(symbol="BTCUSDT", orderType="MARKET", qty=1, category="linear", timeInForce="GTG"))
     # print(wrap.sell(symbol="BTCUSDT", orderType="MARKET", qty=1, category="linear", timeInForce="GTG"))
     # print(wrap.positions(category="linear"))
     # print(wrap.close_positions(symbol="BTCUSDT", category="linear", orderType="MARKET"))
     # print(wrap.get_balance())
-    print(wrap.get_server_time())
-    print(wrap.get_klines(category="linear", symbol="BTCUSDT"))
+    # print(wrap.get_server_time())
+    # print(wrap.get_klines(category="linear", symbol="BTCUSDT"))
     # session = HTTPS("https://api.bybit.com", api_key=api_key, api_secret=secret_key)
     # session.get_wallet_balance()
 

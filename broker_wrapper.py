@@ -209,7 +209,7 @@ if __name__ == "__main__":
 
     wrap = Broker(api_key, api_secret)
     print(wrap.place_order(symbol='BTCUSDT',side='BUY', type='MARKET', quantity=0.03).json())
-    wrap.close_pos(symbol='BTCUSDT')
+    # wrap.close_pos(symbol='BTCUSDT')
     # print(wrap.get_asset("BTCUSDT"))
     # df = pd.DataFrame(wrap.get_klines("BTCUSDT").json())
     # print(df)
