@@ -236,18 +236,20 @@ class RSI_EMA_Strategy(Strategy):
             self.buy(tp=take_profit, sl=stop_loss)
         elif crossover(self.rsi, 50) or crossover(self.ma2, self.ma1):
             self.position.close()
-print(GOOG)
-wrap = Broker()
-data = wrap.get_klines(category="linear", symbol="BTCUSDT", interval="120", limit="1000")
-data['Date & Time'] = pd.to_datetime(data['Date & Time'])
-print(len(data))
-data.set_index('Date & Time', inplace=True)
-with pd.option_context('display.max_rows', None, 'display.max_columns', None):
-    print(data)
-backtest = Backtest(data, RSI_EMA_Strategy, commission=0.002, exclusive_orders=True, cash= 1000000)
-stats = backtest.run()
-print(stats)
-backtest.plot()
+
+if __name__ == "__main__":
+    # print(GOOG)
+    wrap = Broker()
+    data = wrap.get_klines(category="linear", symbol="BTCUSDT", interval="120", limit="1000")
+    data['Date & Time'] = pd.to_datetime(data['Date & Time'])
+    # print(len(data))
+    data.set_index('Date & Time', inplace=True)
+    # with pd.option_context('display.max_rows', None, 'display.max_columns', None):
+    #     print(data)
+    backtest = Backtest(data, RSI_EMA_Strategy, commission=0.002, exclusive_orders=True, cash= 1000000)
+    stats = backtest.run()
+    print(stats)
+    backtest.plot()
 
 # class MySMAStrategy(Strategy):
 #
