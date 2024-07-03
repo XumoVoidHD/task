@@ -51,7 +51,7 @@ class Broker:
         x = str(int(time.time() * 10 ** 3))
         return x
 
-    def buy(self, symbol, orderType, qty, price= 0, category= "spot", timeInForce= "GTC", orderLinkId=False):
+    def buy(self, symbol, orderType, qty, price= 0, category= "linear", timeInForce= "GTC", orderLinkId=False):
         endpoint="/v5/order/create"
         method = "POST"
         params = {
@@ -70,9 +70,11 @@ class Broker:
         params = json.dumps(params)
         res = self.generate_response(endPoint=endpoint, method=method, payload=params)
 
+        # print(res.json())
+
         return res.json()
 
-    def sell(self, symbol, orderType, qty, price= 0, category= "spot", timeInForce= "GTC", orderLinkId=False):
+    def sell(self, symbol, orderType, qty, price= 0, category= "linear", timeInForce= "GTC", orderLinkId=False):
         endpoint="/v5/order/create"
         method = "POST"
         params = {
@@ -95,12 +97,15 @@ class Broker:
         params = json.dumps(params)
         res = self.generate_response(endPoint=endpoint, method=method, payload=params)
 
+        # print(res.json())
+
         return res.json()
 
     def close_positions(self, symbol, category, orderType, orderLinkId=False):
         endpoint="/v5/order/create"
         method = "POST"
         info = self.position_info(symbol)
+        print(info)
         size = info[0]
         type = info[1]
 
@@ -126,7 +131,10 @@ class Broker:
             params['side'] = "Buy"
 
         params = json.dumps(params)
+        # print(params)
         res = self.generate_response(endPoint=endpoint, method=method, payload=params)
+
+        # print(res.json())
 
         return res.json()
 
@@ -254,7 +262,7 @@ class Strategy(Broker):
         self.generating_rsi_ema()
         run = 0
         hours = 120
-        self.buy(symbol='BTCUSDT', orderType="MARKET", qty=1000)
+        self.buy(symbol='BTCUSDT', orderType="MARKET", qty=0.3)
         has_stock = True
         while run != hours:
             self.generating_rsi_ema()
@@ -262,15 +270,15 @@ class Strategy(Broker):
             if self.data.iloc[-1]['EMA_Bullish'] == 1 and self.data.iloc[-1]['RSI_Bullish'] == 1:
                 print("Buy Order")
                 has_stock = True
-                self.buy(symbol='BTCUSDT', orderType="MARKET", qty=1000)
+                self.buy(symbol='BTCUSDT', orderType="MARKET", qty=0.3)
             elif self.data.iloc[-1]['RSI_Bullish'] == -1 and self.data.iloc[-1]['RSI_Bullish'] == -1:
                 if has_stock:
                     print("Close Position")
-                    self.close_positions(symbol="BTCUSDT",category="spot", orderType="MARKET")
+                    self.close_positions(symbol="BTCUSDT",category="linear", orderType="MARKET")
                     has_stock = False
                 else:
                     print("Short Position")
-                    self.sell(symbol='BTCUSDT', orderType="MARKET", qty=1000)
+                    self.sell(symbol='BTCUSDT', orderType="MARKET", qty=0.3)
                     has_stock = True
             else:
                 pass
