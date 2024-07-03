@@ -105,7 +105,6 @@ class Broker:
         endpoint="/v5/order/create"
         method = "POST"
         info = self.position_info(symbol)
-        print(info)
         size = info[0]
         type = info[1]
 
