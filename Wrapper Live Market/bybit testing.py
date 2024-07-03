@@ -258,13 +258,14 @@ class Strategy(Broker):
         # plt.show()
 
     def execute_strategy(self):
-        self.generating_rsi_ema()
-        run = 0
-        hours = 120
-        self.buy(symbol='BTCUSDT', orderType="MARKET", qty=0.3)
+
         has_stock = True
-        while run != hours:
+        run = 0
+        while True:
+            while datetime.now().second != 0:
+                time.sleep(0.1)
             self.generating_rsi_ema()
+
             print(f"Iteration: {run}")
             if self.data.iloc[-1]['EMA_Bullish'] == 1 and self.data.iloc[-1]['RSI_Bullish'] == 1:
                 print("Buy Order")
@@ -282,8 +283,35 @@ class Strategy(Broker):
             else:
                 pass
 
-            time.sleep(60)
             run += 1
+            time.sleep(1)
+
+        # self.generating_rsi_ema()
+        # run = 0
+        # hours = 120
+        # self.buy(symbol='BTCUSDT', orderType="MARKET", qty=0.3)
+        # has_stock = True
+        # while run != hours:
+        #     self.generating_rsi_ema()
+        #     print(f"Iteration: {run}")
+        #     if self.data.iloc[-1]['EMA_Bullish'] == 1 and self.data.iloc[-1]['RSI_Bullish'] == 1:
+        #         print("Buy Order")
+        #         has_stock = True
+        #         self.buy(symbol='BTCUSDT', orderType="MARKET", qty=0.3)
+        #     elif self.data.iloc[-1]['RSI_Bullish'] == -1 and self.data.iloc[-1]['RSI_Bullish'] == -1:
+        #         if has_stock:
+        #             print("Close Position")
+        #             self.close_positions(symbol="BTCUSDT",category="linear", orderType="MARKET")
+        #             has_stock = False
+        #         else:
+        #             print("Short Position")
+        #             self.sell(symbol='BTCUSDT', orderType="MARKET", qty=0.3)
+        #             has_stock = True
+        #     else:
+        #         pass
+        #
+        #     time.sleep(60)
+        #     run += 1
 
 if __name__ == "__main__":
     wrap = Strategy()
