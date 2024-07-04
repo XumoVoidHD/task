@@ -24,5 +24,5 @@ def check_files_exist(directory1, directory2):
     print(new)
 
 
-directory1 = 'C:/Users/vedan\PycharmProjects/task/Multi-Threaded Backtesting/data'
+directory1 = 'C:/Users/vedan/PycharmProjects/task/Multi-Threaded Backtesting/data'
 directory2 = 'C:/Users/vedan/PycharmProjects/task/Multi-Threaded Backtesting'

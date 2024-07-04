@@ -88,12 +88,12 @@ if __name__ == "__main__":
     else:
         it = 0
         start_time = time.time()
-        files = os.listdir("C:/Users/vedan/PycharmProjects/task/Backtesting/data")
+        files = os.listdir("C:/Users/vedan/PycharmProjects/task/Multi-Threaded Backtesting/data")
         for file in files:
             result = do_backtest(file)
-        #     print("\n" +result[0] + "'s Performance "+ str(it) + "\n")
-        #     print(result[1])
-        #     it += 1
+            # print("\n" +result[0] + "'s Performance "+ str(it) + "\n")
+            # print(result[1])
+            # it += 1
         # print(it)
         end_time = time.time()
         print(f"Time taken is {end_time-start_time} seconds without multi_threading")
