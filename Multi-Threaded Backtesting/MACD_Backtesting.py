@@ -10,6 +10,11 @@ import openpyxl
 
 class MACD_Strategy(Strategy):
 
+    EMA_timeperiod = 100
+    fastperiod = 12
+    slowperiod = 26
+    signal_period = 9
+
     def __init__(self, broker, data, params):
         super().__init__(broker, data, params)
         self.macd_hist = None
@@ -22,10 +27,10 @@ class MACD_Strategy(Strategy):
     def init(self):
         prices = self.data['Close']
         self.length = len(prices)
-        self.ma = talib.EMA(prices, timeperiod=100)
-        self.macd = self.I(lambda x: talib.MACD(x)[0], prices)
-        self.macd_signal = self.I(lambda x: talib.MACD(x)[1], prices)
-        self.macd_hist = self.I(lambda x: talib.MACD(x)[2], prices)
+        self.ma = talib.EMA(prices, timeperiod=self.EMA_timeperiod)
+        self.macd = self.I(lambda x: talib.MACD(x, fastperiod=self.fastperiod, slowperiod=self.slowperiod, signalperiod=self.signal_period)[0], prices)
+        self.macd_signal = self.I(lambda x: talib.MACD(x, fastperiod=self.fastperiod, slowperiod=self.slowperiod, signalperiod=self.signal_period)[1], prices)
+        self.macd_hist = self.I(lambda x: talib.MACD(x, fastperiod=self.fastperiod, slowperiod=self.slowperiod, signalperiod=self.signal_period)[2], prices)
         self.atr = self.I(talib.ATR, self.data.High, self.data.Low, self.data.Close, timeperiod=14)
 
     def next(self):
@@ -34,10 +39,10 @@ class MACD_Strategy(Strategy):
         take_profit = price + 3 * atr_value
         stop_loss = price - 1.5 * atr_value
 
-        if crossover(self.macd, self.macd_signal) and self.macd < 0 and self.macd_signal < 0:
+        if crossover(self.macd, self.macd_signal) and self.macd[-1] < 0 and self.macd_signal[-1] < 0 and self.ma[-1] > price:
             self.buy()
 
-        if crossover(self.macd_signal, self.macd) and self.macd > 0 and self.macd_signal > 0:
+        if crossover(self.macd_signal, self.macd) and self.macd[-1] > 0 and self.macd_signal[-1] > 0 and self.ma[-1] < price:
             self.sell()
 
         # if self.data.iloc[-2]["macd_line"] < 0 and self.data.iloc[-2]["signal_line"] < 0 and self.data.iloc[-2][
@@ -64,16 +69,16 @@ def do_backtest(filename):
     data['OpenTime'] = pd.to_datetime(data['OpenTime'], unit='ms')
     data.set_index("OpenTime", inplace=True)
     backtest = Backtest(data, MACD_Strategy, commission=0.002, exclusive_orders=True)
-    stats = backtest.run()
+    stats = backtest.optimize(EMA_timeperiod=range(50,130, 10), fastperiod=range(4,20, 4), slowperiod=range(20,32, 4), signal_period = range(3,15,3), maximize="Return [%]")
     sym = filename.split("_")[0]
     # backtest.plot(filename=sym, open_browser=False)
-
-    return (sym, stats['Start'], stats['End'], stats['Duration'], stats['Exposure Time [%]'], stats['Equity Final [$]'], stats['Equity Peak [$]'], stats['Return [%]'], stats['Buy & Hold Return [%]'], stats['Return (Ann.) [%]'], stats['Return (Ann.) [%]'], stats['Sharpe Ratio'], stats['Sortino Ratio'], stats['Calmar Ratio'], stats['Max. Drawdown [%]'], stats['Avg. Drawdown [%]'], stats['Max. Drawdown Duration'], stats['Max. Drawdown Duration'], stats['# Trades'], stats['Win Rate [%]'], stats['Best Trade [%]'], stats['Worst Trade [%]'], stats['Avg. Trade [%]'], stats['Max. Trade Duration'], stats['Avg. Trade Duration'], stats['Profit Factor'], stats['Expectancy [%]'], stats['SQN'])
+    optimized_params = stats['_strategy']
+    return (sym, stats['Start'], stats['End'], stats['Duration'], stats['Exposure Time [%]'], stats['Equity Final [$]'], stats['Equity Peak [$]'], stats['Return [%]'], stats['Buy & Hold Return [%]'], stats['Return (Ann.) [%]'], stats['Return (Ann.) [%]'], stats['Sharpe Ratio'], stats['Sortino Ratio'], stats['Calmar Ratio'], stats['Max. Drawdown [%]'], stats['Avg. Drawdown [%]'], stats['Max. Drawdown Duration'], stats['Max. Drawdown Duration'], stats['# Trades'], stats['Win Rate [%]'], stats['Best Trade [%]'], stats['Worst Trade [%]'], stats['Avg. Trade [%]'], stats['Max. Trade Duration'], stats['Avg. Trade Duration'], stats['Profit Factor'], stats['Expectancy [%]'], stats['SQN'], optimized_params.EMA_timeperiod, optimized_params.fastperiod, optimized_params.slowperiod, optimized_params.signal_period)
 
 
 if __name__ == "__main__":
 
-    convert_to_excel = False
+    convert_to_excel = True
 
     multi_threading = True
     results = None
@@ -84,12 +89,12 @@ if __name__ == "__main__":
         end_time = time.time()
 
         # it = 1
-        # for i in result:
-        #     print("\n" +i[0] + "'s Performance "+ str(it) + "\n")
+        # for i in results:
+        #     print("\n" + str(i[7]) + "'s Performance "+ str(it) + "\n")
         #     print(i[1])
         #     it += 1
 
-        # print(f"Time taken is {end_time-start_time} seconds with multi-threading")
+        print(f"Time taken is {end_time-start_time} seconds with multi-threading")
     else:
         it = 0
         start_time = time.time()
@@ -132,6 +137,10 @@ if __name__ == "__main__":
         profit_factor = []
         expectancy = []
         SQN = []
+        EMA_timeperiod = []
+        fastperiod = []
+        slowperiod = []
+        signal_period = []
 
         for i in range(0, len(results)):
             names.append(results[i][0])
@@ -162,6 +171,10 @@ if __name__ == "__main__":
             profit_factor.append(results[i][25])
             expectancy.append(results[i][26])
             SQN.append(results[i][27])
+            EMA_timeperiod.append(results[i][28])
+            fastperiod.append(results[i][29])
+            slowperiod.append(results[i][30])
+            signal_period.append(results[i][31])
 
         existing_data = {
             "Index": range(1, len(names) + 1)
@@ -196,8 +209,12 @@ if __name__ == "__main__":
         df['Profit Factor'] = profit_factor
         df['Expectancy [%]'] = expectancy
         df['SQN'] = SQN
+        df['EMA_timeperiod'] = EMA_timeperiod
+        df['Fast Period'] = fastperiod
+        df['Slow Period'] = slowperiod
+        df['Signal Period'] = signal_period
 
-        excel_path = "output.xlsx"
+        excel_path = "wow.xlsx"
 
         # Convert the DataFrame to an Excel file
         df.to_excel(excel_path, index=False, sheet_name="Sheet1")
