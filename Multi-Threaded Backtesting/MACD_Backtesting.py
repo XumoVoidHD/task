@@ -5,7 +5,6 @@ from backtesting import Backtest, Strategy
 from multiprocessing import Pool
 import os
 from backtesting.lib import crossover
-import openpyxl
 
 
 class MACD_Strategy(Strategy):
@@ -84,7 +83,7 @@ if __name__ == "__main__":
     results = None
     if multi_threading:
         start_time = time.time()
-        with Pool()  as p:
+        with Pool() as p:
             results = p.map(do_backtest, os.listdir("data"))
         end_time = time.time()
 
