@@ -1,6 +1,5 @@
 import datetime
 import time
-
 import numpy as np
 import talib
 import pandas as pd
@@ -42,8 +41,9 @@ class MACD_Strategy(Strategy):
         take_profit = price + 3 * atr_value
         stop_loss = price - 1.5 * atr_value
 
+
         if crossover(self.macd, self.macd_signal) and self.macd[-1] < 0 and self.macd_signal[-1] < 0 and self.ma[-1] > price:
-            self.buy()
+            self.buy(tp=take_profit)
 
         if crossover(self.macd_signal, self.macd) and self.macd[-1] > 0 and self.macd_signal[-1] > 0 and self.ma[-1] < price:
             self.sell()
@@ -59,9 +59,9 @@ def walk_forward(filename):
     data['OpenTime'] = pd.to_datetime(data['OpenTime'], unit='ms')
     data.set_index("OpenTime", inplace=True)
     sym = filename.split("_")[0]
-
+    print(sym)
     start_date = data.index[0]
-    end_date = start_date + pd.DateOffset(months=4) - pd.Timedelta(days=1)
+    end_date = start_date + pd.DateOffset(months=8) - pd.Timedelta(days=1)
 
     df_4_months = data.loc[start_date:end_date]
     stat_master.append(run_backtest(df_4_months, MACD_Strategy))
@@ -69,7 +69,7 @@ def walk_forward(filename):
 
     while pd.Timestamp(end_date) <= datetime.datetime(2024,6,10, 0, 0,0):
         start_date = end_date
-        end_date = start_date + pd.DateOffset(months=4) - pd.Timedelta(days=1)
+        end_date = start_date + pd.DateOffset(months=8) - pd.Timedelta(days=1)
         df_4_months = data.loc[start_date:end_date]
         stat_master.append(run_backtest(df_4_months, MACD_Strategy))
 
@@ -82,14 +82,16 @@ def run_backtest(df, strategy, cash=10000, commission=0.002):
     start_date = df.index.min()
     end_date = df.index.max()
 
-    end_3_month_date = start_date + pd.DateOffset(months=3) - pd.DateOffset(days=1)
-    start_1_month_date = end_date - pd.DateOffset(months=1) + pd.DateOffset(days=1)
+    end_3_month_date = start_date + pd.DateOffset(months=6) - pd.DateOffset(days=1)
+    start_1_month_date = end_date - pd.DateOffset(months=2) + pd.DateOffset(days=1)
 
     training_data = df.loc[start_date:end_3_month_date]
     validation_data = df.loc[start_1_month_date:end_date]
 
     bt_training = Backtest(training_data, strategy, cash=cash, commission=commission)
-    stats_validation = bt_training.optimize(EMA_timeperiod=range(50,130, 10), fastperiod=range(4,20, 4), slowperiod=range(20,32, 4), signal_period = range(3,15,3), maximize="Equity Final [$]")
+    stats_validation = bt_training.optimize(EMA_timeperiod=range(10,30, 5), fastperiod=range(4,20, 4),
+                                            slowperiod=range(20,32, 4), signal_period=range(3,15,3),
+                                            maximize=lambda stats: stats['Return [%]'] * stats['# Trades'])
     optimized_params = stats_validation['_strategy']
 
     EMA_timeperiod = optimized_params.EMA_timeperiod
@@ -205,8 +207,6 @@ if __name__ == "__main__":
     with Pool() as p:
         master.append(p.map(walk_forward,os.listdir("data")))
 
-
-    print(master)
     flattened_data = []
     for sublist in master:
         for item in sublist:
@@ -254,7 +254,7 @@ if __name__ == "__main__":
     with pd.option_context('display.max_rows', None, 'display.max_columns', None):
         print(df)
 
-    excel_path = "WFO Output.xlsx"
+    excel_path = "new8 Output.xlsx"
     df.to_excel(excel_path, index=False, sheet_name="Sheet1")
 
     print(f"DataFrame successfully saved to {excel_path}")
