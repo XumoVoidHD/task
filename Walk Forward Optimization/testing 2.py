@@ -42,12 +42,14 @@ def walk_forward(filename):
     end_date = start_date + pd.DateOffset(months=8)
 
     df_4_months = data.loc[start_date:end_date]
+    print(df_4_months)
     stat_master.append(run_backtest(df_4_months, MACD_Strategy))
 
     while pd.Timestamp(end_date) <= datetime.datetime(2024, 6, 10, 0, 0, 0):
         start_date = end_date
         end_date = start_date + pd.DateOffset(months=8)
         df_4_months = data.loc[start_date:end_date]
+        print(df_4_months)
         stat_master.append(run_backtest(df_4_months, MACD_Strategy))
 
     return {sym: stat_master}
@@ -209,5 +211,5 @@ if __name__ == "__main__":
                         flattened_data.append(record_dict)
 
     df_stats = pd.DataFrame(flattened_data)
-    df_stats.to_csv("walk_forward_optimized_params.csv", index=False)
+    df_stats.to_excel("walk_forward_optimized_params.csv", index=False)
     print("--- %s seconds ---" % (time.time() - start_time))

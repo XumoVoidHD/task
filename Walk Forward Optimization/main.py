@@ -4,11 +4,9 @@ import numpy as np
 import talib
 import pandas as pd
 from backtesting import Backtest, Strategy
-from backtesting.lib import resample_apply
 from multiprocessing import Pool
 import os
 from backtesting.lib import crossover
-import pickle
 
 class MACD_Strategy(Strategy):
 
@@ -68,7 +66,7 @@ def walk_forward(filename):
 
 
     while pd.Timestamp(end_date) <= datetime.datetime(2024,6,10, 0, 0,0):
-        start_date = end_date
+        start_date = start_date + pd.DateOffset(months=1)
         end_date = start_date + pd.DateOffset(months=8) - pd.Timedelta(days=1)
         df_4_months = data.loc[start_date:end_date]
         stat_master.append(run_backtest(df_4_months, MACD_Strategy))
@@ -76,7 +74,16 @@ def walk_forward(filename):
 
     return {sym: stat_master}
 
+
 def run_backtest(df, strategy, cash=10000, commission=0.002):
+
+    def custom_constraint_function(params):
+        bt = Backtest(training_data, MACD_Strategy, cash=10_000, commission=.002)
+        stats = bt.run(**params)
+        num_trades = stats['# Trades']
+        min_trades = 2
+        return num_trades >= min_trades
+
     stat_instance = {}
 
     start_date = df.index.min()
@@ -89,9 +96,10 @@ def run_backtest(df, strategy, cash=10000, commission=0.002):
     validation_data = df.loc[start_1_month_date:end_date]
 
     bt_training = Backtest(training_data, strategy, cash=cash, commission=commission)
-    stats_validation = bt_training.optimize(EMA_timeperiod=range(10,30, 5), fastperiod=range(4,20, 4),
-                                            slowperiod=range(20,32, 4), signal_period=range(3,15,3),
-                                            maximize=lambda stats: stats['Return [%]'])
+    stats_validation = bt_training.optimize(EMA_timeperiod=range(5,30, 5), fastperiod=range(2,22, 4),
+                                            slowperiod=range(10,32, 4), signal_period=range(1,16,3),
+                                            maximize=lambda stats: stats['Return [%]'],
+                                            constraint=lambda params: custom_constraint_function(params))
     optimized_params = stats_validation['_strategy']
 
     EMA_timeperiod = optimized_params.EMA_timeperiod
@@ -254,7 +262,7 @@ if __name__ == "__main__":
     with pd.option_context('display.max_rows', None, 'display.max_columns', None):
         print(df)
 
-    excel_path = "new9 Output.xlsx"
+    excel_path = "Output new1.xlsx"
     df.to_excel(excel_path, index=False, sheet_name="Sheet1")
 
     print(f"DataFrame successfully saved to {excel_path}")
