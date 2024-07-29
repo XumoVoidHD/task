@@ -62,7 +62,7 @@ class Broker:
             self._force_login(request_token)
 
     def get_ohlc_data(self,exchange,symbol):
-        print("getting ohlc data")
+        print("getting ohlc dataa")
         sym=exchange+":"+symbol
         instrument_list=[sym]
         data=self.kite.ohlc(instrument_list)
@@ -183,7 +183,7 @@ class Broker:
     def check_order_status(self,orderid):
         order_history=self.kite.order_history(orderid)
         if str(order_history["status"])=="success":
-            data=order_history["data"]
+            data=order_history["dataa"]
             latest_data=data[-1]
             status=latest_data["status"]
             pending_quantity=latest_data["pending_quantity"]

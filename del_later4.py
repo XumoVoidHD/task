@@ -31,7 +31,7 @@ class Broker:
         }
 
         if (method == "POST"):
-            #response = req.post(self.url + endPoint, headers=headers, data=payload)
+            #response = req.post(self.url + endPoint, headers=headers, dataa=payload)
             response = req.request(method, self.url + endPoint, headers=headers, data=payload)
         else:
             response = req.request(method, self.url + endPoint + "?" + str(payload), headers=headers)
@@ -310,7 +310,7 @@ class Strategy(Broker):
 
     def show_data(self, df):
 
-        # df = self.data
+        # df = self.dataa
         # plt.figure(figsize=(10, 5))
         # plt.plot(df.index, df["RSI_Bullish"], label="RSI", marker='o')
         # plt.plot(df.index, df["EMA_Bullish"], label="EMA", marker='x')

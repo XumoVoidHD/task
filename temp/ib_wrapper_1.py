@@ -59,9 +59,9 @@ class IBWrapper:
         - trade: The trade object returned by placing the order.
         - mid_price: The mid price at which the limit order was placed.
         """
-        # Request market data
+        # Request market dataa
         market_data = self.ib.reqMktData(contract, '', False, False)
-        self.ib.sleep(2)  # Wait a bit for the market data to update
+        self.ib.sleep(2)  # Wait a bit for the market dataa to update
 
         # Calculate mid price
         if market_data.bid and market_data.ask:

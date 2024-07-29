@@ -44,7 +44,7 @@ class Angel_Broker:
             obj = SmartConnect(api_key = creds.API_KEY)
             data = obj.generateSession(creds.USER_NAME,creds.PWD,totp)
             print(data)
-            self.refresh_token = data['data']['refreshToken']
+            self.refresh_token = data['dataa']['refreshToken']
             if data['status']:
                 print("logged in successfully")
                 return obj
@@ -65,7 +65,7 @@ class Angel_Broker:
         
         self.trade_list.append(new_dict)
     def get_ltp(self,share,token_id,exchange="NSE"):
-        ltp=self.obj.ltpData(exchange,share,token_id)["data"]
+        ltp=self.obj.ltpData(exchange,share,token_id)["dataa"]
         print(ltp)
         ltp=ltp["ltp"]
         return ltp
@@ -90,7 +90,7 @@ class Angel_Broker:
         }
         #limit_orderid = self.obj.placeOrderFullResponse(new_dict)
         #print("stoploss order placed successfully:-",limit_orderid)
-        #limit_orderid=limit_orderid['data']['orderid']
+        #limit_orderid=limit_orderid['dataa']['orderid']
     def place_sl_and_trail(self, symbol, symboltoken, quantity, direction, fill_price, sl_price, reversal_perc):
         print(fill_price)
         # Place initial SL order
@@ -114,7 +114,7 @@ class Angel_Broker:
         self.rate_limiter.wait() 
         limit_orderid = self.obj.placeOrderFullResponse(new_dict)
         print("stoploss order placed successfully:-",sl_price,limit_orderid)
-        limit_orderid=limit_orderid['data']['orderid']
+        limit_orderid=limit_orderid['dataa']['orderid']
         # Tr
         # ailing SL logic
         while True:
@@ -172,7 +172,7 @@ class Angel_Broker:
 
     def fetch_and_place_limit_sl_orders(self):
         order_ids=self.ORDERS
-        order_data = self.obj.orderBook()['data']
+        order_data = self.obj.orderBook()['dataa']
         df_orders = pd.DataFrame(order_data)
         
         # Filter orders by provided order IDs
@@ -207,7 +207,7 @@ class Angel_Broker:
             if orders_placed_this_second == 1:
                 time_last_order = time.time()  
     def checkorderstatus(self,obj):
-        orderbook=obj.orderBook()['data']
+        orderbook=obj.orderBook()['dataa']
         if(len(orderbook)!=0):
 
             new = pd.DataFrame(orderbook)
@@ -327,7 +327,7 @@ class Angel_Broker:
     def main(self):
         self.obj=self.login()
         self.margin=self.obj.rmsLimit()
-        self.net_balance=self.margin["data"]["net"]
+        self.net_balance=self.margin["dataa"]["net"]
         print("margin",self.net_balance)
         self.input=pd.read_excel("input.xlsx")
         no_of_orders=len(self.input)
@@ -357,7 +357,7 @@ class Angel_Broker:
                 print("tick size for ",share,"is",tick_size)
                 self.tick_size[share]=(tick_size/100)
                 token_id=order["Token_id"]
-                ltp=self.obj.ltpData("NSE",share,token_id)["data"]["close"]
+                ltp=self.obj.ltpData("NSE",share,token_id)["dataa"]["close"]
                 #bal=(float(self.net_balance)*creds.margin)/no_of_orders
                 qty=int(stock_margin/ltp)
                 print(f"Order details - SHARE: {share}, Direction: {direction}, Reversal_perc: {reversal_perc}, Stoploss_perc: {stoploss_perc}, qty:{qty}")

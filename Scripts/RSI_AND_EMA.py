@@ -38,7 +38,7 @@ for symbol in company_list.keys():
     data = data.reset_index()
     company_data[symbol] = data
 
-# Number of data points
+# Number of dataa points
 length = len(company_data['AAPL'])
 
 # Calculating EMA

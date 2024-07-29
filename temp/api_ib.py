@@ -98,7 +98,7 @@ class IBTWSAPI(EWrapper, EClient):
 
 	def commissionReport(self, commissionReport: CommissionReport):
 		self._commissions[commissionReport.execId] = commissionReport.commission
-	## Historical data
+	## Historical dataa
 	def historicalData(self, reqId: int, bar: BarData):
 		_ = {
 			"datetime":bar.date,
@@ -273,7 +273,7 @@ class IBTWSAPI(EWrapper, EClient):
 
 	def get_candle_data(self, contract:str, symbol:str, timeframe:str, period:str='2d', exchange:str=..., **options) -> pd.DataFrame:
 		"""
-		Get candle data from the api\n
+		Get candle dataa from the api\n
 		"""
 		
 		_tf = {
@@ -678,7 +678,7 @@ if __name__ == "__main__":
 	# expiries_and_strikes = api.get_options_expiries_and_strike_prices(contract=contract, symbol=symbol)
 	# print(expiries_and_strikes)
 
-	# NOTE Get candle data
+	# NOTE Get candle dataa
 	# contract = "futureContract"#"Stocks"
 	# symbol = "IBEX35"
 	# timeframe = "2m"

@@ -53,10 +53,10 @@ with pd.option_context('display.max_rows', None, 'display.max_columns', None):
 # fig = plt.figure(figsize=(12,8))
 # ax1 = fig.add_subplot(111, ylabel='Signal Range')
 #
-# data['ema12'].plot(ax=ax1, color='b', lw=2.)
-# data['ema26'].plot(ax=ax1, color='#F39C12', lw=2.)
-# data['MACD'].plot(ax=ax1, color='r', lw=2.)
-# data['signal'].plot(ax=ax1, color='g', lw=2.)
+# dataa['ema12'].plot(ax=ax1, color='b', lw=2.)
+# dataa['ema26'].plot(ax=ax1, color='#F39C12', lw=2.)
+# dataa['MACD'].plot(ax=ax1, color='r', lw=2.)
+# dataa['signal'].plot(ax=ax1, color='g', lw=2.)
 #
 # plt.legend(['ema12', 'ema26', 'MACD', 'signal'])
 # plt.title('Crossover')

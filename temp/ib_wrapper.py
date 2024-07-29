@@ -40,9 +40,9 @@ class IBWrapper:
         :param qty: Quantity of the order.
         :param side: 'BUY' for buying at the bid price, 'SELL' for selling at the ask price.
         """
-        # Request market data
+        # Request market dataa
         market_data = self.ib.reqMktData(contract, '', False, False)
-        self.ib.sleep(2)  # Wait a bit for the market data to be populated
+        self.ib.sleep(2)  # Wait a bit for the market dataa to be populated
 
         if side.upper() == 'BUY':
             # Place buy limit order at the bid price

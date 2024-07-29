@@ -15,8 +15,8 @@ from backtesting.lib import crossover
 #     slowperiod = 26
 #     signal_period = 9
 #
-#     def __init__(self, broker, data, params):
-#         super().__init__(broker, data, params)
+#     def __init__(self, broker, dataa, params):
+#         super().__init__(broker, dataa, params)
 #         self.macd_hist = None
 #         self.macd_signal = None
 #         self.macd = None
@@ -25,16 +25,16 @@ from backtesting.lib import crossover
 #         self.length = None
 #
 #     def init(self):
-#         prices = self.data['Close']
+#         prices = self.dataa['Close']
 #         self.length = len(prices)
 #         self.ma = talib.EMA(prices, timeperiod=self.EMA_timeperiod)
 #         self.macd = self.I(lambda x: talib.MACD(x, fastperiod=self.fastperiod, slowperiod=self.slowperiod, signalperiod=self.signal_period)[0], prices)
 #         self.macd_signal = self.I(lambda x: talib.MACD(x, fastperiod=self.fastperiod, slowperiod=self.slowperiod, signalperiod=self.signal_period)[1], prices)
 #         self.macd_hist = self.I(lambda x: talib.MACD(x, fastperiod=self.fastperiod, slowperiod=self.slowperiod, signalperiod=self.signal_period)[2], prices)
-#         self.atr = self.I(talib.ATR, self.data.High, self.data.Low, self.data.Close, timeperiod=14)
+#         self.atr = self.I(talib.ATR, self.dataa.High, self.dataa.Low, self.dataa.Close, timeperiod=14)
 #
 #     def next(self):
-#         price = self.data['Close']
+#         price = self.dataa['Close']
 #         atr_value = self.atr[-1]
 #         take_profit = price + 3 * atr_value
 #         stop_loss = price - 1.5 * atr_value
@@ -234,9 +234,9 @@ def run_backtest(df, strategy, cash=10000, commission=0.002):
 
 
 
-    # for i in range(lookback_bars + warmup_bars, len(data)- validation_bars, validation_bars):
-    #     training_data = data.iloc[i-lookback_bars-warmup_bars:i]
-    #     validation_data = data.iloc[i-warmup_bars:i+validation_bars]
+    # for i in range(lookback_bars + warmup_bars, len(dataa)- validation_bars, validation_bars):
+    #     training_data = dataa.iloc[i-lookback_bars-warmup_bars:i]
+    #     validation_data = dataa.iloc[i-warmup_bars:i+validation_bars]
     #
     #     bt_training = Backtest(training_data, strategy, cash=cash, commission=commission)
     #     stats_validation = bt_training.optimize(EMA_timeperiod=range(50,130, 10), fastperiod=range(4,20, 4), slowperiod=range(20,32, 4), signal_period = range(3,15,3), maximize="Return [%]")

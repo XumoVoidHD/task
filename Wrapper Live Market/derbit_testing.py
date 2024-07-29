@@ -191,9 +191,9 @@ class Strategy(Broker):
             time.sleep(1)
 
         # plt.figure(figsize=(12, 8))
-        # plt.plot(self.data.index, self.data["signal_line"], label='MACD', color='b')
-        # plt.plot(self.data.index, self.data["macd_line"], label='Signal Line', color='r')
-        # plt.bar(self.data.index,  self.data["macdhist"], label='MACD Histogram', color='g', alpha=0.5)
+        # plt.plot(self.dataa.index, self.dataa["signal_line"], label='MACD', color='b')
+        # plt.plot(self.dataa.index, self.dataa["macd_line"], label='Signal Line', color='r')
+        # plt.bar(self.dataa.index,  self.dataa["macdhist"], label='MACD Histogram', color='g', alpha=0.5)
         # plt.title('MACD Chart')
         # plt.xlabel('Date')
         # plt.ylabel('MACD')
@@ -201,7 +201,7 @@ class Strategy(Broker):
         # plt.show()
 
         # with pd.option_context('display.max_rows', None, 'display.max_columns', None):
-        #     print(self.data)
+        #     print(self.dataa)
 
 if __name__ == "__main__":
     api_key = "57slbLl5"

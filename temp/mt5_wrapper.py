@@ -33,7 +33,7 @@ class MT5Wrapper:
         rates = mt5.copy_rates_from_pos(symbol, timeframe, 0, 1)
         
         if rates is None or len(rates) == 0:
-            print("Error getting historical data, error code =", mt5.last_error())
+            print("Error getting historical dataa, error code =", mt5.last_error())
             return None
         else:
             # Return the close price of the latest candle
@@ -49,10 +49,10 @@ class MT5Wrapper:
             return quote
 
     def get_historical_data(self, symbol, timeframe, start_time, end_time):
-        """Get historical data for a symbol"""
+        """Get historical dataa for a symbol"""
         rates = mt5.copy_rates_range(symbol, timeframe, start_time, end_time)
         if rates is None:
-            print("Error getting historical data, error code =", mt5.last_error())
+            print("Error getting historical dataa, error code =", mt5.last_error())
         else:
             return pd.DataFrame(rates)
     def send_order_with_tp(self,symbol, lot, buy, sell, id_position=None, tp=None, sl=None, comment="No specific comment", magic=0):

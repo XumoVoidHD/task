@@ -62,7 +62,7 @@ print(account_info)
 params = {
     "order_type":'LIMIT',
     'side': "Buy",
-    "size"
+    "size": "yo"
 
 }
 # Place an order

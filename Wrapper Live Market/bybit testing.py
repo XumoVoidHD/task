@@ -31,7 +31,7 @@ class Broker:
         }
 
         if (method == "POST"):
-            #response = req.post(self.url + endPoint, headers=headers, data=payload)
+            #response = req.post(self.url + endPoint, headers=headers, dataa=payload)
             response = req.request(method, self.url + endPoint, headers=headers, data=payload)
         else:
             response = req.request(method, self.url + endPoint + "?" + str(payload), headers=headers)
@@ -245,9 +245,9 @@ class Strategy(Broker):
                 self.data.loc[i, 'RSI_Bullish'] = -1
 
         # with pd.option_context('display.max_rows', None, 'display.max_columns', None):
-        #     print(self.data)
+        #     print(self.dataa)
 
-        # df = self.data
+        # df = self.dataa
         # plt.figure(figsize=(10, 5))
         # plt.plot(df.index, df["RSI_Bullish"], label="RSI", marker='o')
         # plt.plot(df.index, df["EMA_Bullish"], label="EMA", marker='x')
@@ -294,11 +294,11 @@ class Strategy(Broker):
         # while run != hours:
         #     self.generating_rsi_ema()
         #     print(f"Iteration: {run}")
-        #     if self.data.iloc[-1]['EMA_Bullish'] == 1 and self.data.iloc[-1]['RSI_Bullish'] == 1:
+        #     if self.dataa.iloc[-1]['EMA_Bullish'] == 1 and self.dataa.iloc[-1]['RSI_Bullish'] == 1:
         #         print("Buy Order")
         #         has_stock = True
         #         self.buy(symbol='BTCUSDT', orderType="MARKET", qty=0.3)
-        #     elif self.data.iloc[-1]['RSI_Bullish'] == -1 and self.data.iloc[-1]['RSI_Bullish'] == -1:
+        #     elif self.dataa.iloc[-1]['RSI_Bullish'] == -1 and self.dataa.iloc[-1]['RSI_Bullish'] == -1:
         #         if has_stock:
         #             print("Close Position")
         #             self.close_positions(symbol="BTCUSDT",category="linear", orderType="MARKET")

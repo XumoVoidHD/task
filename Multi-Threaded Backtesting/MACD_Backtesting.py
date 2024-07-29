@@ -44,17 +44,17 @@ class MACD_Strategy(Strategy):
         if crossover(self.macd_signal, self.macd) and self.macd[-1] > 0 and self.macd_signal[-1] > 0 and self.ma[-1] < price:
             self.sell()
 
-        # if self.data.iloc[-2]["macd_line"] < 0 and self.data.iloc[-2]["signal_line"] < 0 and self.data.iloc[-2][
-        #     'Moving Average'] < self.data.iloc[-2]["Close"]:
-        #     if self.data.iloc[-3]["macd_line"] < self.data.iloc[-3]["signal_line"] and self.data.iloc[-2]["macd_line"] > \
-        #             self.data.iloc[-2]["signal_line"]:
+        # if self.dataa.iloc[-2]["macd_line"] < 0 and self.dataa.iloc[-2]["signal_line"] < 0 and self.dataa.iloc[-2][
+        #     'Moving Average'] < self.dataa.iloc[-2]["Close"]:
+        #     if self.dataa.iloc[-3]["macd_line"] < self.dataa.iloc[-3]["signal_line"] and self.dataa.iloc[-2]["macd_line"] > \
+        #             self.dataa.iloc[-2]["signal_line"]:
         #         print("Buy")
         #         self.buy(tp= take_profit, sl= stop_loss)
         #
-        # if self.data.iloc[-2]["macd_line"] > 0 and self.data.iloc[-2]["signal_line"] > 0 and self.data.iloc[-2][
-        #     'Moving Average'] > self.data.iloc[-2]["Close"]:
-        #     if self.data.iloc[-3]["macd_line"] > self.data.iloc[-3]["signal_line"] and self.data.iloc[-2]["macd_line"] < \
-        #             self.data.iloc[-2]["signal_line"]:
+        # if self.dataa.iloc[-2]["macd_line"] > 0 and self.dataa.iloc[-2]["signal_line"] > 0 and self.dataa.iloc[-2][
+        #     'Moving Average'] > self.dataa.iloc[-2]["Close"]:
+        #     if self.dataa.iloc[-3]["macd_line"] > self.dataa.iloc[-3]["signal_line"] and self.dataa.iloc[-2]["macd_line"] < \
+        #             self.dataa.iloc[-2]["signal_line"]:
         #         print("Sell")
         #         self.position.close()
 
@@ -62,8 +62,8 @@ class MACD_Strategy(Strategy):
 def do_backtest(filename):
     result_data = []
 
-    data = pd.read_csv(f"data/{filename}")
-    # os.remove(f"data/{filename}")
+    data = pd.read_csv(f"data_1day/{filename}")
+    # os.remove(f"dataa/{filename}")
     data = data.rename(columns={'timestamp': 'OpenTime','open': 'Open', "high": "High", 'low': 'Low', 'close': 'Close', 'volume': 'Volume'})
     data['OpenTime'] = pd.to_datetime(data['OpenTime'], unit='ms')
     data.set_index("OpenTime", inplace=True)
@@ -84,7 +84,7 @@ if __name__ == "__main__":
     if multi_threading:
         start_time = time.time()
         with Pool() as p:
-            results = p.map(do_backtest, os.listdir("data"))
+            results = p.map(do_backtest, os.listdir("data_1day"))
         end_time = time.time()
 
         # it = 1
@@ -213,7 +213,7 @@ if __name__ == "__main__":
         df['Slow Period'] = slowperiod
         df['Signal Period'] = signal_period
 
-        excel_path = "wow.xlsx"
+        excel_path = "woww.xlsx"
 
         # Convert the DataFrame to an Excel file
         df.to_excel(excel_path, index=False, sheet_name="Sheet1")

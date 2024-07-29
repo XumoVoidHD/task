@@ -31,7 +31,7 @@ class Broker:
         }
 
         if (method == "POST"):
-            #response = req.post(self.url + endPoint, headers=headers, data=payload)
+            #response = req.post(self.url + endPoint, headers=headers, dataa=payload)
             response = req.request(method, self.url + endPoint, headers=headers, data=payload)
         else:
             response = req.request(method, self.url + endPoint + "?" + str(payload), headers=headers)

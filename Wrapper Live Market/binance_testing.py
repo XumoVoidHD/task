@@ -200,20 +200,20 @@ class Strategy(Broker):
         self.data['Middleband'] = bbands[1]
         self.data['Lowerband'] = bbands[2]
         self.data['Bullish'] = 0 * self.length
-        # self.data['Buy_Signal'] = np.nan * self.length
-        # self.data['Sell_Signal'] = np.nan * self.length
+        # self.dataa['Buy_Signal'] = np.nan * self.length
+        # self.dataa['Sell_Signal'] = np.nan * self.length
 
         for i in range(30, self.length):
             if self.data.at[i, 'Close'] > self.data.at[i, 'Upperband'] and self.data.at[i-1, 'Close'] < self.data.at[i-1, 'Upperband']:
-                # self.data.at[i, 'Buy_Signal'] = 1 * self.data.at[i, 'Close']
+                # self.dataa.at[i, 'Buy_Signal'] = 1 * self.dataa.at[i, 'Close']
                 self.data.at[i, 'Bullish'] = 1
             if self.data.at[i, 'Close'] < self.data.at[i, 'Lowerband'] and self.data.at[i-1, 'Close'] > self.data.at[i-1, 'Lowerband']:
-                # self.data.at[i, 'Sell_Signal'] = 1 * self.data.at[i, 'Close']
+                # self.dataa.at[i, 'Sell_Signal'] = 1 * self.dataa.at[i, 'Close']
                 self.data.at[i, 'Bullish'] = -1
         # with pd.option_context('display.max_rows', None, 'display.max_columns', None):
-        #     print(self.data)
+        #     print(self.dataa)
 
-        # df = self.data
+        # df = self.dataa
         # plt.figure(figsize=(10, 5))
         # plt.plot(df.index, df["Upperband"], label="Upperband", marker='o')
         # plt.plot(df.index, df["Middleband"], label="Middleband", marker='x')
@@ -252,10 +252,10 @@ class Strategy(Broker):
         # while run != hours:
         #     self.generate_BBands()
         #     print(f"Iteration: {run}")
-        #     if self.data.iloc[-1]['Bullish'] == 1:
+        #     if self.dataa.iloc[-1]['Bullish'] == 1:
         #         print("Buy Order")
         #         wrap.place_order(symbol='BTCUSDT',side='BUY', type='MARKET', quantity=0.02)
-        #     elif self.data.iloc[-1]['Bullish']  == -1:
+        #     elif self.dataa.iloc[-1]['Bullish']  == -1:
         #         print("Short Position")
         #         wrap.place_order(symbol='BTCUSDT',side='SELL', type='MARKET', quantity=0.02)
         #     else:

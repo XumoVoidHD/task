@@ -34,7 +34,7 @@ class Broker:
         }
 
         if (method == "POST"):
-            #response = req.post(self.url + endPoint, headers=headers, data=payload)
+            #response = req.post(self.url + endPoint, headers=headers, dataa=payload)
             response = req.request(method, self.url + endPoint, headers=headers, data=payload)
         else:
             response = req.request(method, self.url + endPoint + "?" + str(payload), headers=headers)
@@ -242,10 +242,10 @@ if __name__ == "__main__":
     wrap = Broker()
     data = wrap.get_klines(category="linear", symbol="BTCUSDT", interval="120", limit="1000")
     data['Date & Time'] = pd.to_datetime(data['Date & Time'])
-    # print(len(data))
+    # print(len(dataa))
     data.set_index('Date & Time', inplace=True)
     # with pd.option_context('display.max_rows', None, 'display.max_columns', None):
-    #     print(data)
+    #     print(dataa)
     backtest = Backtest(data, RSI_EMA_Strategy, commission=0.002, exclusive_orders=True, cash= 1000000)
     stats = backtest.run()
     print(stats)
@@ -254,7 +254,7 @@ if __name__ == "__main__":
 # class MySMAStrategy(Strategy):
 #
 #     def init(self):
-#         price = self.data['Close']
+#         price = self.dataa['Close']
 #         self.ma1 = self.I(SMA, price, 20)
 #         self.ma2 = self.I(SMA, price, 50)
 #
@@ -265,7 +265,7 @@ if __name__ == "__main__":
 #             self.sell()
 #
 #
-# backtest = Backtest(data, MySMAStrategy, commission=0.002, exclusive_orders=True, cash=1000000)
+# backtest = Backtest(dataa, MySMAStrategy, commission=0.002, exclusive_orders=True, cash=1000000)
 # stats = backtest.run()
 # print(stats)
 # backtest.plot()

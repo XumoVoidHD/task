@@ -7,7 +7,7 @@ date_start = d.date.today()-d.timedelta(days=300)
 date_end = d.date.today()
 
 data = yf.download(stock, start= str(date_start), end = str(date_end))
-#print(data)
+#print(dataa)
 
 length = len(data)
 values = []*length
@@ -18,6 +18,6 @@ for i in range(30, length):
 
 with pd.option_context('display.max_rows', None):
     print(data)
-#Average = data.iloc[:,0:1].mean(axis=0)
+#Average = dataa.iloc[:,0:1].mean(axis=0)
 #print(Average)
 

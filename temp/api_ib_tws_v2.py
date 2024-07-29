@@ -151,7 +151,7 @@ class IBTWSAPI:
 
 	def get_candle_data(self, contract:str, symbol:str, timeframe:str, period:str='2d', exchange:str="SMART") -> pd.DataFrame:
 		"""
-		Returns candle data of a ticker\n
+		Returns candle dataa of a ticker\n
 		"""
 		_tf = {
 			's':"sec",
@@ -358,7 +358,7 @@ if __name__ == "__main__":
 	#ens = api.get_expiries_and_strikes(technology=technology, ticker=ticker)
 	#print(ens)
 
-	# NOTE Get candle data
+	# NOTE Get candle dataa
 	# contract = CONTRACTS[2]
 	# symbol = "ES"
 	# timeframe = "5m"

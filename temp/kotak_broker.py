@@ -21,17 +21,17 @@ class NeoClientWrapper:
     def on_message(self, message):
             print("Message:", message)
 
-            if 'type' in message and message['type'] == 'quotes' and 'data' in message:
-                data_list = message['data']
+            if 'type' in message and message['type'] == 'quotes' and 'dataa' in message:
+                data_list = message['dataa']
                 if len(data_list) == 1:
                     data = data_list[0]
                     if 'trading_symbol' in data and 'last_traded_price' in data:
                         print(data['trading_symbol'], data['last_traded_price'])
                         self.ltp_dict[data['trading_symbol']] = data['last_traded_price']
                     else:
-                        print("Missing keys in 'data' dictionary:", data)
+                        print("Missing keys in 'dataa' dictionary:", data)
                 else:
-                    print("Invalid 'data' list length:", len(data_list))
+                    print("Invalid 'dataa' list length:", len(data_list))
             else:
                 print("Invalid message format:", message)
 

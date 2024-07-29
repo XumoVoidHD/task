@@ -88,8 +88,8 @@ class rsi_ema_strategy(Strategy):
             self.position.close()
 
 
-# data = yf.download("AAPL", "2022-01-01","2024-04-04" )
-# backtest = Backtest(data, rsi_ema_strategy, commission=0.002, exclusive_orders=True)
+# dataa = yf.download("AAPL", "2022-01-01","2024-04-04" )
+# backtest = Backtest(dataa, rsi_ema_strategy, commission=0.002, exclusive_orders=True)
 # stats = backtest.run()
 # print(stats)
 # backtest.plot()
@@ -109,8 +109,8 @@ class MyMACDStrategy(Strategy):
             self.sell()
 
 
-# data = yf.download("AAPL", "2020-04-04","2024-04-04" )
-# backtest = Backtest(data, MyMACDStrategy, commission=0.002, exclusive_orders=True)
+# dataa = yf.download("AAPL", "2020-04-04","2024-04-04" )
+# backtest = Backtest(dataa, MyMACDStrategy, commission=0.002, exclusive_orders=True)
 # stats = backtest.run()
 # print(stats)
 

@@ -87,19 +87,30 @@ def run_backtest(df, strategy, cash=10000, commission=0.002):
     stat_instance = {}
 
     start_date = df.index.min()
-    end_date = df.index.max()
+    end_date = df.index[-1]
+    end_3_month_date = start_date + pd.DateOffset(months=3)
+    start_1_month_date = end_date - pd.DateOffset(months=1)
 
-    end_3_month_date = start_date + pd.DateOffset(months=6) - pd.DateOffset(days=1)
-    start_1_month_date = end_date - pd.DateOffset(months=2) + pd.DateOffset(days=1)
+    print(f"Pre: {end_3_month_date}")
+    while end_3_month_date not in df.index and pd.Timestamp(end_3_month_date) <= datetime.datetime(2024, 6, 10, 0, 0, 0):
+        print("hit3")
+        end_3_month_date -= pd.Timedelta(hours=1)
+    print(f"Post: {end_3_month_date}")
+
+    print(f"Pre: {start_1_month_date}")
+    while start_1_month_date not in df.index and pd.Timestamp(start_1_month_date) <= datetime.datetime(2024, 6, 10, 0, 0, 0):
+        print("hit4")
+        start_1_month_date += pd.Timedelta(hours=1)
+    print(f"Post: {start_1_month_date}")
 
     training_data = df.loc[start_date:end_3_month_date]
     validation_data = df.loc[start_1_month_date:end_date]
 
     bt_training = Backtest(training_data, strategy, cash=cash, commission=commission)
-    stats_validation = bt_training.optimize(EMA_timeperiod=range(5,30, 5), fastperiod=range(2,22, 4),
-                                            slowperiod=range(10,32, 4), signal_period=range(1,16,3),
-                                            maximize=lambda stats: stats['Return [%]'],
-                                            constraint=lambda params: custom_constraint_function(params))
+    stats_validation = bt_training.optimize(EMA_timeperiod=range(5,30, 10), fastperiod=range(2,22, 8),
+                                            slowperiod=range(10,32, 8), signal_period=range(1,16,6),
+                                            maximize=lambda stats: stats['Return [%]'],)
+                                            #constraint=lambda params: custom_constraint_function(params))
     optimized_params = stats_validation['_strategy']
 
     EMA_timeperiod = optimized_params.EMA_timeperiod
@@ -186,9 +197,9 @@ def run_backtest(df, strategy, cash=10000, commission=0.002):
 
 
 
-    # for i in range(lookback_bars + warmup_bars, len(data)- validation_bars, validation_bars):
-    #     training_data = data.iloc[i-lookback_bars-warmup_bars:i]
-    #     validation_data = data.iloc[i-warmup_bars:i+validation_bars]
+    # for i in range(lookback_bars + warmup_bars, len(dataa)- validation_bars, validation_bars):
+    #     training_data = dataa.iloc[i-lookback_bars-warmup_bars:i]
+    #     validation_data = dataa.iloc[i-warmup_bars:i+validation_bars]
     #
     #     bt_training = Backtest(training_data, strategy, cash=cash, commission=commission)
     #     stats_validation = bt_training.optimize(EMA_timeperiod=range(50,130, 10), fastperiod=range(4,20, 4), slowperiod=range(20,32, 4), signal_period = range(3,15,3), maximize="Return [%]")
@@ -262,7 +273,7 @@ if __name__ == "__main__":
     with pd.option_context('display.max_rows', None, 'display.max_columns', None):
         print(df)
 
-    excel_path = "Output new1.xlsx"
+    excel_path = "Test1.xlsx"
     df.to_excel(excel_path, index=False, sheet_name="Sheet1")
 
     print(f"DataFrame successfully saved to {excel_path}")

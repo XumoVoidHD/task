@@ -33,7 +33,7 @@ def copy_csv_files_by_names(source_dir, destination_dir, csv_files):
             print(f"File {csv_file} does not exist in {source_dir}")
 
 
-# source_directory = 'C:/Users/vedan/PycharmProjects/task/Multi-Threaded Backtesting/data'
+# source_directory = 'C:/Users/vedan/PycharmProjects/task/Multi-Threaded Backtesting/dataa'
 # destination_directory = 'C:/Users/vedan/PycharmProjects/task/Multi-Threaded Backtesting/data2'
 #
 # csv_files_to_copy = ['MARXU_XNAS_1day.csv', 'MAYS_XNAS_1day.csv', 'MCACW_XNAS_1day.csv', 'MCAGR_XNAS_1day.csv', 'MITAU_XNAS_1day.csv', 'MCAAW_XNAS_1day.csv', 'MITAW_XNAS_1day.csv', 'MCAGU_XNAS_1day.csv', 'MCAAU_XNAS_1day.csv', 'MCACR_XNAS_1day.csv', 'MCAC_XNAS_1day.csv', 'MCAG_XNAS_1day.csv', 'MDRRP_XNAS_1day.csv', 'MCACU_XNAS_1day.csv', 'MACAU_XNAS_1day.csv', 'MAQCU_XNAS_1day.csv', 'MARXR_XNAS_1day.csv', 'MAQCW_XNAS_1day.csv', 'MACA_XNAS_1day.csv', 'MACAW_XNAS_1day.csv', 'MAQC_XNAS_1day.csv', 'MMVWW_XNAS_1day.csv', 'MLECW_XNAS_1day.csv']
@@ -43,7 +43,7 @@ def copy_csv_files_by_names(source_dir, destination_dir, csv_files):
 
 
 # source_directory = "C:/Users/vedan/Downloads/Us"
-# destination_directory = "C:/Users/vedan/PycharmProjects/task/Multi-Threaded Backtesting/data"
+# destination_directory = "C:/Users/vedan/PycharmProjects/task/Multi-Threaded Backtesting/dataa"
 # file_pattern = '1day.csv'
 #
 # copy_files(source_directory, destination_directory, file_pattern)

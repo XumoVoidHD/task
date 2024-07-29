@@ -36,8 +36,8 @@ bull_values = []
 data = pd.DataFrame()
 
 for symbol in company_list.keys():
-    #print(f"Downloading data for {symbol}...")
-    # Download data for the company
+    #print(f"Downloading dataa for {symbol}...")
+    # Download dataa for the company
     data = yf.download(symbol, start=start_date, end=end_date)
     # Calculate EMA20 and EMA50
     data['ema_short'] = data['Close'].ewm(span=20, adjust=False).mean()
@@ -47,7 +47,7 @@ for symbol in company_list.keys():
     condition1 = data['ema_short'] > data['ema_long']
     condition2 = data['ema_long'] > data['ema_short']
     data['bullish'] = np.where(condition1, 1.0, 0.0)
-    # Store the data in the dictionary
+    # Store the dataa in the dictionary
     company_data[symbol] = data
 
 dates_market_open = company_data['AAPL'].index.tolist()
