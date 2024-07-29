@@ -1,0 +1,58 @@
+class MACD_Strategy(Strategy):
+
+    EMA_timeperiod = 100
+    fastperiod = 12
+    slowperiod = 26
+    signal_period = 9
+
+    def __init__(self, broker, data, params):
+        super().__init__(broker, data, params)
+        self.macd_hist = None
+        self.macd_signal = None
+        self.macd = None
+        self.ma = None
+        self.atr = None
+        self.length = None
+
+    def init(self):
+        prices = self.data['Close']
+        self.length = len(prices)
+        self.ma = talib.EMA(prices, timeperiod=self.EMA_timeperiod)
+        self.macd = self.I(lambda x: talib.MACD(x, fastperiod=self.fastperiod, slowperiod=self.slowperiod, signalperiod=self.signal_period)[0], prices)
+        self.macd_signal = self.I(lambda x: talib.MACD(x, fastperiod=self.fastperiod, slowperiod=self.slowperiod, signalperiod=self.signal_period)[1], prices)
+        self.macd_hist = self.I(lambda x: talib.MACD(x, fastperiod=self.fastperiod, slowperiod=self.slowperiod, signalperiod=self.signal_period)[2], prices)
+        self.atr = self.I(talib.ATR, self.data.High, self.data.Low, self.data.Close, timeperiod=14)
+
+    def next(self):
+        price = self.data['Close']
+        atr_value = self.atr[-1]
+        take_profit = price + 3 * atr_value
+        stop_loss = price - 1.5 * atr_value
+
+
+        if crossover(self.macd, self.macd_signal) and self.macd[-1] < 0 and self.macd_signal[-1] < 0 and self.ma[-1] > price:
+            self.buy(tp=take_profit)
+
+        if crossover(self.macd_signal, self.macd) and self.macd[-1] > 0 and self.macd_signal[-1] > 0 and self.ma[-1] < price:
+            self.sell()
+
+
+
+class Something_diff(Strategy):
+    rsi_timeperiod = 14
+    adx_timeperiod = 14
+    dema_timeperiod = 14
+
+    def init(self):
+        self.dema200 = self.I(talib.DEMA, self.data.Close, timeperiod=self.dema_timeperiod)
+        self.adx = self.I(talib.ADX, self.data.High, self.data.Low, self.data.Close, timeperiod=self.adx_timeperiod)
+        self.rsi = self.I(talib.RSI, self.data.Close, timeperiod=self.rsi_timeperiod)
+
+    def next(self):
+        if (self.adx[-1] > self.adx[-2] and self.data.Close > self.dema200 and self.rsi < 70 and self.data.Volume[-1] >
+                self.data.Volume[-2]):
+            self.buy()
+
+        elif (self.adx[-1] < self.adx[-2] and self.data.Close < self.dema200 and self.rsi > 70 and self.data.Volume[
+            -1] < self.data.Volume[-2]):
+            self.sell()
