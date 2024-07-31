@@ -2,7 +2,6 @@
 # Public Key: 72230b0e2a222e592bf49815d1ccd1ef06469a6bcbc83a6081118cc6ec771270
 import datetime
 import pandas as pd
-from dotenv import load_dotenv
 import requests
 import os
 from binance.client import Client
@@ -208,7 +207,9 @@ if __name__ == "__main__":
     api_secret = "96eb5cda871fb203cd9b082830b2c264acdbd5822c1873d86db5d7149009666d"
 
     wrap = Broker(api_key, api_secret)
-    print(wrap.place_order(symbol='BTCUSDT',side='BUY', type='MARKET', quantity=0.03).json())
+    # print(wrap.place_order(symbol='BTCUSDT',side='BUY', type='MARKET', quantity=0.03).json())
+    print(wrap.get_klines(symbol='BTCUSDT').json())
+
     # wrap.close_pos(symbol='BTCUSDT')
     # print(wrap.get_asset("BTCUSDT"))
     # df = pd.DataFrame(wrap.get_klines("BTCUSDT").json())

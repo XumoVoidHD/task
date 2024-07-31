@@ -38,14 +38,14 @@ class ADX_Strategy(Strategy):
 def do_backtest(filename):
     result_data = []
 
-    data = pd.read_csv(f"/Backtesting Strategies/dataa/{filename}")
+    data = pd.read_csv(f"C:/Users/vedan/PycharmProjects/task/data/data_4h/{filename}")
     # os.remove(f"dataa/{filename}")
     data = data.rename(columns={'timestamp': 'OpenTime','open': 'Open', "high": "High", 'low': 'Low', 'close': 'Close', 'volume': 'Volume'})
     data['OpenTime'] = pd.to_datetime(data['OpenTime'], unit='ms')
     data.set_index("OpenTime", inplace=True)
     backtest = Backtest(data, ADX_Strategy, commission=0.002, exclusive_orders=True)
     stats = backtest.optimize(rsi_timeperiod=range(4, 24, 4),adx_timeperiod=range(4, 24, 4), dema_timeperiod=range(10, 250, 20),
-                                            maximize='Equity Final [$]')
+                                            maximize='Sharpe Ratio')
     sym = filename.split("_")[0]
     # backtest.plot(filename=sym, open_browser=False)
     optimized_params = stats['_strategy']
@@ -61,7 +61,7 @@ if __name__ == "__main__":
     if multi_threading:
         start_time = time.time()
         with Pool() as p:
-            results = p.map(do_backtest, os.listdir("/Backtesting Strategies/dataa"))
+            results = p.map(do_backtest, os.listdir("C:/Users/vedan/PycharmProjects/task/data/data_4h"))
         end_time = time.time()
 
         # it = 1
@@ -187,7 +187,7 @@ if __name__ == "__main__":
         df['adx_timeperiod'] = adx_timeperiod
         df['dema_timeperiod'] = dema_timeperiod
 
-        excel_path = "ADX.xlsx"
+        excel_path = "ADX 5min.xlsx"
 
         # Convert the DataFrame to an Excel file
         df.to_excel(excel_path, index=False, sheet_name="Sheet1")
