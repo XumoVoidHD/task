@@ -2,6 +2,7 @@ import os
 import sys
 import pandas as pd
 import time
+import matplotlib.pyplot as plt
 
 
 def get_data_stock(symbol="AAPL", timeframe="5minute", folder="data_5min"):
@@ -14,7 +15,7 @@ def get_data_stock(symbol="AAPL", timeframe="5minute", folder="data_5min"):
                                 'volume': 'Volume'})
     data['DateTime'] = pd.to_datetime(data['DateTime'], unit='ms')
     data.set_index("DateTime", inplace=True)
-    data.drop('Unnamed: 6', axis=1, inplace=True)
+    # data.drop('Unnamed: 6', axis=1, inplace=True)
     # # data.reset_index(drop=False, inplace=True)
     # data.to_excel("test.xlsx")
     return data
@@ -199,7 +200,7 @@ def hour_poc(df):
     return combined_data
 
 
-if __name__ == "main":
+if __name__ == "__main__":
 
     data = get_data_stock("AAPL", "5minute", "data_5min")
     # data = get_data_binance()
@@ -207,12 +208,13 @@ if __name__ == "main":
     start_time = time.time()
     df = timezone(data)
     df.sort_index(inplace=True)
+    data.drop('Unnamed: 6', axis=1, inplace=True)
     excel_path = "POC Stock (given timeframe).xlsx"
     df.to_excel(excel_path, index=True, sheet_name="Sheet1")
     # with pd.option_context('display.max_rows', None, 'display.max_columns', None):
     #     print(df)
-
     df = hour_poc(data)
+    data.drop('Unnamed: 6', axis=1, inplace=True)
     excel_path = "POC Stock (1h timeframe).xlsx"
     df.to_excel(excel_path, index=True, sheet_name="Sheet1")
     # with pd.option_context('display.max_rows', None, 'display.max_columns', None):

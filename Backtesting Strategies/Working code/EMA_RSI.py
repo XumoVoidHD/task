@@ -43,7 +43,7 @@ class EMA_RSI(Strategy):
 def do_backtest(filename):
     result_data = []
 
-    data = pd.read_csv(f"C:/Users/vedan/PycharmProjects/task/Backtesting Strategies/dataa/{filename}")
+    data = pd.read_csv(f"C:/Users/vedan/PycharmProjects/task/data/data_1d/{filename}")
     # os.remove(f"dataa/{filename}")
     data = data.rename(columns={'timestamp': 'OpenTime','open': 'Open', "high": "High", 'low': 'Low', 'close': 'Close', 'volume': 'Volume'})
     data['OpenTime'] = pd.to_datetime(data['OpenTime'], unit='ms')
@@ -65,7 +65,7 @@ if __name__ == "__main__":
     if multi_threading:
         start_time = time.time()
         with Pool() as p:
-            results = p.map(do_backtest, os.listdir("C:/Users/vedan/PycharmProjects/task/Backtesting Strategies/dataa"))
+            results = p.map(do_backtest, os.listdir("C:/Users/vedan/PycharmProjects/task/data/data_1d"))
         end_time = time.time()
 
         # it = 1
@@ -187,7 +187,7 @@ if __name__ == "__main__":
         df['ema_long'] = ema_long
         df['ema_short'] = ema_short
 
-        excel_path = "EMA_RSI 2.xlsx"
+        excel_path = "EMA_RSI 3.xlsx"
 
         # Convert the DataFrame to an Excel file
         df.to_excel(excel_path, index=False, sheet_name="Sheet1")
