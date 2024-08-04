@@ -14,8 +14,16 @@ df.drop(columns=['<DATE>', '<TIME>'], inplace=True)
 df.set_index("DateTime", inplace=True)
 df.index = pd.to_datetime(df.index)
 
-path = "USDJPY.xlsx"
-df.to_excel(path, index=True, sheet_name="Sheet1")
+to_excel = False
+to_csv = True
+
+if to_excel:
+    path = "USDJPY_wow.xlsx"
+    df.to_excel(path, index=True, sheet_name="Sheet1")
+if to_csv:
+    path = "USDJPY_wow.csv"
+    df.to_csv(path, index=True)
+
 with pd.option_context('display.max_rows', None, 'display.max_columns', None):
     print(df)
 

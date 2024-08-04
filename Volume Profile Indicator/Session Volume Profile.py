@@ -12,7 +12,10 @@ class svp:
         # self.end_datetime = '2024-06-10 11:55:00'
         # datetime_range = pd.date_range(start=self.start_datetime, end=self.end_datetime, freq='h')
         # self.svp_data = pd.DataFrame(datetime_range, columns=['Datetime'])
+        # self.svp_data = pd.DataFrame
         self.svp_data = pd.DataFrame
+        self.svp_hour_data = pd.DataFrame
+        self.svp_timezone_data = pd.DataFrame
         self.timezone_poc_dict = {}
         self.timezone_vah_dict = {}
         self.timezone_val_dict = {}
@@ -56,9 +59,12 @@ class svp:
         return data
 
     def get_mt5_data(self, name):
-        file_path = name
-        df = pd.read_excel(file_path)
+        # file_path = name
+        # df = pd.read_excel(file_path)
+        df = pd.read_csv("USDJPY_wow.csv")
+        df['DateTime'] = pd.to_datetime(df['DateTime'])
         df.set_index('DateTime', inplace=True)
+        df = df.drop(columns=['Tick Volume', 'Spread'])
         #df.index = pd.to_datetime(df.index)
         with pd.option_context('display.max_rows', None, 'display.max_columns', None):
             print(df)
@@ -210,8 +216,11 @@ class svp:
         # excel_filename = 'sample_data 4.xlsx'
         # combined_data.to_excel(excel_filename)
         combined_data.sort_index(inplace=True)
-        # self.svp_data = self.svp_data.join(combined_data)
+        self.svp_timezone_data = combined_data
 
+        with pd.option_context('display.max_columns', None):
+            print(combined_data)
+            print("wow")
         return combined_data
 
     def hour_poc(self, df):
@@ -244,21 +253,24 @@ class svp:
 
             starting = end_date + pd.Timedelta(minutes=1)
 
-        self.svp_data['POC_Price (Hourly)'] = combined_data['POC_Price']
-        self.svp_data['POC_Volume (Hourly)'] = combined_data['POC_Volume']
-        self.svp_data['VAH (Hourly)'] = combined_data['VAH']
-        self.svp_data['VAL (Hourly)'] = combined_data['VAL']
-
         # self.svp_data = self.svp_data.join(combined_data)
+        with pd.option_context('display.max_columns', None):
+            print(combined_data)
+        self.svp_hour_data = combined_data
         return combined_data
 
     def combined(self, data):
         self.hour_poc(data)
         self.timezone(data)
-        self.svp_data.rename(columns={'POC_Price': 'POC_Price (Timezone)'}, inplace=True)
-        self.svp_data.rename(columns={'POC_Volume': 'POC_Volume (Timezone)'}, inplace=True)
-        self.svp_data.rename(columns={'VAH': 'VAH (Timezone'}, inplace=True)
-        self.svp_data.rename(columns={'VAL': 'VAL (Timezone'}, inplace=True)
+        self.svp_timezone_data.drop(columns=['Open', 'High', 'Low', 'Close', 'Volume'], inplace=True)
+        # with pd.option_context('display.max_columns', None):
+        #     print(self.svp_hour_data)
+        #     print(self.svp_timezone_data)
+        self.svp_data = self.svp_hour_data.join(self.svp_timezone_data, sort=True)
+        self.svp_data.rename(columns={'POC_Price': 'POC_Price (Hourly)'}, inplace=True)
+        self.svp_data.rename(columns={'POC_Volume': 'POC_Volume (Hourly)'}, inplace=True)
+        self.svp_data.rename(columns={'VAH': 'VAH (Hourly)'}, inplace=True)
+        self.svp_data.rename(columns={'VAL': 'VAL (Hourly)'}, inplace=True)
 
         return self.svp_data
 
@@ -266,7 +278,7 @@ class svp:
 if __name__ == "__main__":
     start_time = time.time()
     obj = svp()
-    data = obj.get_data_stock()
+    data = obj.get_mt5_data("w")
     df = obj.combined(data)
     # print("Timezone_POC")
     # print(obj.timezone_poc_dict)
@@ -281,11 +293,12 @@ if __name__ == "__main__":
     # print("Hour VAL")
     # print(obj.hour_val_dict)
     # df.drop('Unnamed: 6', axis=1, inplace=True)
-
-    excel_path = "Test6 POC.xlsx"
-    df.to_excel(excel_path, index=True, sheet_name="Sheet1")
-    with pd.option_context('display.max_rows', None, 'display.max_columns', None):
-        print(df)
+    to_excel = True
+    if to_excel:
+        excel_path = "Test14 POC.xlsx"
+        df.to_excel(excel_path, index=True, sheet_name="Sheet1")
+    # with pd.option_context('display.max_rows', None, 'display.max_columns', None):
+    #     print(df)
 
     end_time = time.time()
 
