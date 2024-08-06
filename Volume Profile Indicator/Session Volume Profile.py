@@ -300,6 +300,7 @@ class svp:
     def generate_buy_and_sell(self):
         self.svp_data['Buy'] = np.where(self.svp_data['Close'] - self.svp_data['Resistance'] > 0, 1, 0)
         self.svp_data['Sell'] = np.where(self.svp_data['Close'] - self.svp_data['Support'] < 0, 1, 0)
+
     def combined(self, data):
         self.hour_poc(data)
         self.timezone(data)
@@ -315,6 +316,7 @@ class svp:
         self.generate_buy_and_sell()
 
         return self.svp_data
+
     def print_dict(self):
         print("Timezone_POC")
         print(self.timezone_poc_dict)
@@ -357,6 +359,7 @@ class svp:
         plt.legend()
         plt.grid(True)
         plt.show()
+
 
 if __name__ == "__main__":
     start_time = time.time()
