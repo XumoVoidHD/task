@@ -29,9 +29,6 @@ class svp:
                      'volume': 'Volume'})
         data['DateTime'] = pd.to_datetime(data['DateTime'], unit='ms')
         data.set_index("DateTime", inplace=True)
-        # data.drop('Unnamed: 6', axis=1, inplace=True)
-        # # data.reset_index(drop=False, inplace=True)
-        # data.to_excel("test.xlsx")
         self.svp_data = data
 
         data.to_excel("wow.xlsx", index=True, sheet_name="Sheet1")
@@ -47,8 +44,6 @@ class svp:
         # data.drop('Unnamed: 6', axis=1, inplace=True)
         data.dropna(inplace=True)
         data.set_index("DateTime", inplace=True)
-        # data.reset_index(drop=False, inplace=True)
-        # data.to_excel("test.xlsx")
         self.svp_data = data
 
         return data
