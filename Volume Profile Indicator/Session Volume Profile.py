@@ -55,9 +55,7 @@ class svp:
         df['DateTime'] = pd.to_datetime(df['DateTime'])
         df.set_index('DateTime', inplace=True)
         df = df.drop(columns=['Vol', 'Spread'])
-        #df.index = pd.to_datetime(df.index)
-        # with pd.option_context('display.max_rows', None, 'display.max_columns', None):
-        #     print(df)
+
         return df
 
     def calculate_vah_val(self, df):
@@ -173,7 +171,6 @@ class svp:
             self.timezone_val_dict[str(start_index)] = float(df_one_hour['VAL (Timezone)'].iloc[0])
             slices.append(df_one_hour)
             combined_data = pd.concat([combined_data, df_one_hour])
-            # print(combined_data['VAH (Timezone)'])
 
 
         start_time = "15:00:00"
@@ -243,13 +240,7 @@ class svp:
                     pass
                 end += pd.Timedelta(minutes=1)
 
-
-        # excel_filename = 'sample_data 4.xlsx'
-        # combined_data.to_excel(excel_filename)
         combined_data.sort_index(inplace=True)
-        # column_to_check = "VAL (Timezone)"
-        # combined_data = combined_data.dropna(subset=[column_to_check])
-        # combined_data = combined_data.loc[~df.index.duplicated(keep='first')]
         self.svp_timezone_data = combined_data
 
         return combined_data
