@@ -3,10 +3,10 @@ import sys
 import pandas as pd
 import time
 import matplotlib.pyplot as plt
+import numpy as np
 
 
 class svp:
-
     def __init__(self):
         # self.start_datetime = '2010-01-04  09:15:00'
         # self.end_datetime = '2024-06-10 11:55:00'
@@ -61,10 +61,10 @@ class svp:
     def get_mt5_data(self, name):
         # file_path = name
         # df = pd.read_excel(file_path)
-        df = pd.read_csv("USDJPY_wow.csv")
+        df = pd.read_csv("USDJPY_owo.csv")
         df['DateTime'] = pd.to_datetime(df['DateTime'])
         df.set_index('DateTime', inplace=True)
-        df = df.drop(columns=['Tick Volume', 'Spread'])
+        df = df.drop(columns=['Vol', 'Spread'])
         #df.index = pd.to_datetime(df.index)
         with pd.option_context('display.max_rows', None, 'display.max_columns', None):
             print(df)
@@ -115,11 +115,15 @@ class svp:
             x = self.calculate_vah_val(df_one_hour)
             df_one_hour['VAH (Timezone)'] = x[0]
             df_one_hour['VAL (Timezone)'] = x[1]
+            df_one_hour['Resistance'] = x[0] + 6 * 0.0001
+            df_one_hour['Support'] = x[1] - 6 * 0.0001
             self.timezone_poc_dict[str(start_index)] = float(df_one_hour['POC_Price (Timezone)'].iloc[0])
             self.timezone_vah_dict[str(start_index)] = float(df_one_hour['VAH (Timezone)'].iloc[0])
             self.timezone_val_dict[str(start_index)] = float(df_one_hour['VAL (Timezone)'].iloc[0])
             slices.append(df_one_hour)
             combined_data = pd.concat([combined_data, df_one_hour])
+
+
 
         start_time = "22:30:00"
         start_time = pd.Timestamp(start_time).time()
@@ -138,6 +142,8 @@ class svp:
             x = self.calculate_vah_val(df_one_hour)
             df_one_hour['VAH (Timezone)'] = x[0]
             df_one_hour['VAL (Timezone)'] = x[1]
+            df_one_hour['Resistance'] = x[0] + 6 * 0.0001
+            df_one_hour['Support'] = x[1] - 6 * 0.0001
             self.timezone_poc_dict[str(start_index)] = float(df_one_hour['POC_Price (Timezone)'].iloc[0])
             self.timezone_vah_dict[str(start_index)] = float(df_one_hour['VAH (Timezone)'].iloc[0])
             self.timezone_val_dict[str(start_index)] = float(df_one_hour['VAL (Timezone)'].iloc[0])
@@ -161,6 +167,8 @@ class svp:
             x = self.calculate_vah_val(df_one_hour)
             df_one_hour['VAH (Timezone)'] = x[0]
             df_one_hour['VAL (Timezone)'] = x[1]
+            df_one_hour['Resistance'] = x[0] + 6 * 0.0001
+            df_one_hour['Support'] = x[1] - 6 * 0.0001
             self.timezone_poc_dict[str(start_index)] = float(df_one_hour['POC_Price (Timezone)'].iloc[0])
             self.timezone_vah_dict[str(start_index)] = float(df_one_hour['VAH (Timezone)'].iloc[0])
             self.timezone_val_dict[str(start_index)] = float(df_one_hour['VAL (Timezone)'].iloc[0])
@@ -184,6 +192,8 @@ class svp:
             x = self.calculate_vah_val(df_one_hour)
             df_one_hour['VAH (Timezone)'] = x[0]
             df_one_hour['VAL (Timezone)'] = x[1]
+            df_one_hour['Resistance'] = x[0] + 6 * 0.0001
+            df_one_hour['Support'] = x[1] - 6 * 0.0001
             self.timezone_poc_dict[str(start_index)] = float(df_one_hour['POC_Price (Timezone)'].iloc[0])
             self.timezone_vah_dict[str(start_index)] = float(df_one_hour['VAH (Timezone)'].iloc[0])
             self.timezone_val_dict[str(start_index)] = float(df_one_hour['VAL (Timezone)'].iloc[0])
@@ -207,6 +217,8 @@ class svp:
             x = self.calculate_vah_val(df_one_hour)
             df_one_hour['VAH (Timezone)'] = x[0]
             df_one_hour['VAL (Timezone)'] = x[1]
+            df_one_hour['Resistance'] = x[0] + 6 * 0.0001
+            df_one_hour['Support'] = x[1] - 6 * 0.0001
             self.timezone_poc_dict[str(start_index)] = float(df_one_hour['POC_Price (Timezone)'].iloc[0])
             self.timezone_vah_dict[str(start_index)] = float(df_one_hour['VAH (Timezone)'].iloc[0])
             self.timezone_val_dict[str(start_index)] = float(df_one_hour['VAL (Timezone)'].iloc[0])
@@ -218,9 +230,6 @@ class svp:
         combined_data.sort_index(inplace=True)
         self.svp_timezone_data = combined_data
 
-        with pd.option_context('display.max_columns', None):
-            print(combined_data)
-            print("wow")
         return combined_data
 
     def hour_poc(self, df):
@@ -253,12 +262,12 @@ class svp:
 
             starting = end_date + pd.Timedelta(minutes=1)
 
-        # self.svp_data = self.svp_data.join(combined_data)
-        with pd.option_context('display.max_columns', None):
-            print(combined_data)
         self.svp_hour_data = combined_data
         return combined_data
 
+    def generate_buy_and_sell(self):
+        self.svp_data['Buy'] = np.where(self.svp_data['Close'] - self.svp_data['Resistance'] > 0, 1, 0)
+        self.svp_data['Sell'] = np.where(self.svp_data['Close'] - self.svp_data['Support'] < 0, 1, 0)
     def combined(self, data):
         self.hour_poc(data)
         self.timezone(data)
@@ -271,34 +280,69 @@ class svp:
         self.svp_data.rename(columns={'POC_Volume': 'POC_Volume (Hourly)'}, inplace=True)
         self.svp_data.rename(columns={'VAH': 'VAH (Hourly)'}, inplace=True)
         self.svp_data.rename(columns={'VAL': 'VAL (Hourly)'}, inplace=True)
+        self.generate_buy_and_sell()
 
         return self.svp_data
+    def print_dict(self):
+        print("Timezone_POC")
+        print(self.timezone_poc_dict)
+        print("Timezone VAH")
+        print(self.timezone_vah_dict)
+        print("Timezone VAL")
+        print(self.timezone_val_dict)
+        print("Hour POC")
+        print(self.hour_poc_dict)
+        print("Hour VAH")
+        print(self.hour_vah_dict)
+        print("Hour VAL")
+        print(self.hour_val_dict)
 
+    def plot(self, data=None, read=False):
+        if read:
+            df = pd.read_excel("C:/Users/vedan/PycharmProjects/task/Volume Profile Indicator/Test16.xlsx")
+        else:
+            df = data
+        plt.figure(figsize=(12, 6))
+        plt.plot(df['DateTime'], df['Close'], label='Close', marker='o')
+        plt.plot(df['DateTime'], df['VAH (Hourly)'], label='VAH Hourly', linestyle='--')
+        plt.plot(df['DateTime'], df['VAL (Hourly)'], label='VAL Hourly', linestyle='--')
+        plt.plot(df['DateTime'], df['POC_Price (Hourly)'], label='POC Price Hourly', linestyle='-.')
+        plt.plot(df['DateTime'], df['VAH (Timezone)'], label='VAH Timezone', linestyle='--')
+        plt.plot(df['DateTime'], df['VAL (Timezone)'], label='VAL Timezone', linestyle='--')
+        plt.plot(df['DateTime'], df['Resistance'], label='VAH Timezone', linestyle='--')
+        plt.plot(df['DateTime'], df['Support'], label='VAL Timezone', linestyle='--')
+        plt.plot(df['DateTime'], df['POC_Price (Timezone)'], label='POC Price Timezone', linestyle='-.')
+        buy_signal = data[data['Buy'] == 1]
+        sell_signal = data[data['Sell'] == 1]
+        plt.scatter(buy_signal.index, buy_signal['Close'], label='Buy Signal', marker="^", color='green', alpha=1, s=400)
+        plt.scatter(sell_signal.index, sell_signal['Close'], label='Sell Signal', marker="v", color='red', alpha=1, s=400)
+        plt.fill_between(df['DateTime'], df['VAH (Hourly)'], df['VAL (Hourly)'], color='gray', alpha=0.3)
+        plt.fill_between(df['DateTime'], df['VAH (Timezone)'], df['VAL (Timezone)'], color='blue', alpha=0.3)
+        plt.fill_between(df['DateTime'], df['Resistance'], df['Support'], color='red', alpha=0.3)
+        plt.xlabel('DateTime')
+        plt.ylabel('Price')
+        plt.title('Close, VAH, VAL, and POC Prices')
+        plt.legend()
+        plt.grid(True)
+        plt.show()
 
 if __name__ == "__main__":
     start_time = time.time()
     obj = svp()
     data = obj.get_mt5_data("w")
     df = obj.combined(data)
-    # print("Timezone_POC")
-    # print(obj.timezone_poc_dict)
-    # print("Timezone VAH")
-    # print(obj.timezone_vah_dict)
-    # print("Timezone VAL")
-    # print(obj.timezone_val_dict)
-    # print("Hour POC")
-    # print(obj.hour_poc_dict)
-    # print("Hour VAH")
-    # print(obj.hour_vah_dict)
-    # print("Hour VAL")
-    # print(obj.hour_val_dict)
-    # df.drop('Unnamed: 6', axis=1, inplace=True)
-    to_excel = True
+
+    to_excel = False
+    plot = True
+    show_data = False
     if to_excel:
-        excel_path = "Test14 POC.xlsx"
+        excel_path = "Test17.xlsx"
         df.to_excel(excel_path, index=True, sheet_name="Sheet1")
-    # with pd.option_context('display.max_rows', None, 'display.max_columns', None):
-    #     print(df)
+    if plot:
+        obj.plot(df, read=True)
+    if show_data:
+        with pd.option_context('display.max_rows', None, 'display.max_columns', None):
+            print(df)
 
     end_time = time.time()
 

@@ -5,8 +5,8 @@ import time
 import matplotlib.pyplot as plt
 
 start_time = time.time()
-df = pd.read_excel("C:/Users/vedan/PycharmProjects/task/Volume Profile Indicator/Test12 POC.xlsx")
-df = df[-2000:]
+df = pd.read_excel("C:/Users/vedan/PycharmProjects/task/Volume Profile Indicator/Test15.xlsx")
+# df = df[-2000:]
 
 plt.figure(figsize=(12, 6))
 plt.plot(df['DateTime'], df['Close'], label='Close', marker='o')
