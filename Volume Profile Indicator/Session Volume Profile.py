@@ -8,11 +8,6 @@ import numpy as np
 
 class svp:
     def __init__(self):
-        # self.start_datetime = '2010-01-04  09:15:00'
-        # self.end_datetime = '2024-06-10 11:55:00'
-        # datetime_range = pd.date_range(start=self.start_datetime, end=self.end_datetime, freq='h')
-        # self.svp_data = pd.DataFrame(datetime_range, columns=['Datetime'])
-        # self.svp_data = pd.DataFrame
         self.svp_data = pd.DataFrame
         self.svp_hour_data = pd.DataFrame
         self.svp_timezone_data = pd.DataFrame
@@ -305,9 +300,6 @@ class svp:
         self.hour_poc(data)
         self.timezone(data)
         self.svp_timezone_data.drop(columns=['Open', 'High', 'Low', 'Close', 'Volume'], inplace=True)
-        # with pd.option_context('display.max_columns', None):
-        #     print(self.svp_hour_data)
-        #     print(self.svp_timezone_data)
         self.svp_data = self.svp_hour_data.join(self.svp_timezone_data, sort=True)
         self.svp_data.rename(columns={'POC_Price': 'POC_Price (Hourly)'}, inplace=True)
         self.svp_data.rename(columns={'POC_Volume': 'POC_Volume (Hourly)'}, inplace=True)
