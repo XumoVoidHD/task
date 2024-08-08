@@ -4,6 +4,9 @@ import pandas as pd
 import time
 import matplotlib.pyplot as plt
 import numpy as np
+from backtesting import Backtest, Strategy
+from multiprocessing import Pool
+from backtesting.lib import crossover
 
 
 class svp:
@@ -279,10 +282,8 @@ class svp:
         return combined_data
 
     def generate_buy_and_sell(self):
-        for index, row in self.svp_data.iterrows():
-            if pd.isna(row['VAH (Timezone)']):
-                self.svp_data.at[index, 'Buy'] = 1 if row['Close'] - row['Resistance'] > 0 else 0
-                self.svp_data.at[index, 'Sell'] = 1 if row['Close'] - row['Support'] < 0 else 0
+        self.svp_data['Buy'] = np.where(self.svp_data['Close'] - self.svp_data['Resistance'] > 0, 1, 0)
+        self.svp_data['Sell'] = np.where(self.svp_data['Close'] - self.svp_data['Support'] < 0, 1, 0)
 
     def combined(self, data):
         self.hour_poc(data)
@@ -328,8 +329,8 @@ class svp:
         plt.plot(df.index, df['POC_Price (Timezone)'], label='POC Price Timezone', linestyle='-.')
         buy_signal = data[data['Buy'] == 1]
         sell_signal = data[data['Sell'] == 1]
-        plt.scatter(buy_signal.index, buy_signal['Close']+0.2, label='Buy Signal', marker="^", color='green', alpha=1, s=50)
-        plt.scatter(sell_signal.index, sell_signal['Close']-0.2, label='Sell Signal', marker="v", color='red', alpha=1, s=50)
+        plt.scatter(buy_signal.index, buy_signal['Close']+0.5, label='Buy Signal', marker="^", color='green', alpha=1, s=200)
+        plt.scatter(sell_signal.index, sell_signal['Close']+0.5, label='Sell Signal', marker="v", color='red', alpha=1, s=200)
         plt.fill_between(df.index, df['VAH (Hourly)'], df['VAL (Hourly)'], color='gray', alpha=0.3)
         plt.fill_between(df.index, df['VAH (Timezone)'], df['VAL (Timezone)'], color='blue', alpha=0.3)
         plt.fill_between(df.index, df['Resistance'], df['Support'], color='red', alpha=0.3)
@@ -340,47 +341,36 @@ class svp:
         plt.grid(True)
         plt.show()
 
-    def backtest(self):
-        capital = 10000
-        holding = 0
-        df = pd.read_excel("Test24.xlsx", sheet_name='Sheet1')
-        df.set_index('DateTime', inplace=True)
-        for index in df.index:
-            if df.loc[index, "Buy"].any() == 1:
-                temp = capital * 0.2
-                holding += int(temp/df.loc[index, "Close"])
-                capital -= df.loc[index, "Close"] * int(temp/df.loc[index, "Close"])
-            if df.loc[index, "Sell"].any() == 1:
-                if holding > 0:
-                    temp = holding * df.loc[index, "Close"]
-                    capital += temp
-                    holding = 0
 
-        print(f"Capital: {capital}")
+class TUPOC(Strategy):
+
+
+    def __init__(self, broker, data, params):
+        super().__init__(broker, data, params)
+
+
+    def init(self):
+        pass
+
+    def next(self):
+        buy_signal = self.data["Buy"][-1]
+        sell_signal = self.data['Sell'][-1]
+
+        if buy_signal == 1:
+            self.buy()
+        elif sell_signal == 1:
+            self.sell()
 
 
 
 if __name__ == "__main__":
-    start_time = time.time()
-    obj = svp()
-    data = obj.get_mt5_data("w")
-    df = obj.combined(data)
-    # obj.backtest()
-
-    to_excel = True
-    plot = False
-    show_data = False
-    if to_excel:
-        excel_path = "Test29.xlsx"
-        df.to_excel(excel_path, index=True, sheet_name="Sheet1")
-    if plot:
-        obj.plot(df)
-    if show_data:
-        with pd.option_context('display.max_rows', None, 'display.max_columns', None):
-            print(df)
-
-    end_time = time.time()
-
-    print(f"Time taken to execute this program is {end_time-start_time} seconds")
-
-
+    file_path = "C:/Users/vedan/PycharmProjects/task/Volume Profile Indicator/Test29.xlsx"
+    data = pd.read_excel(file_path, sheet_name='Sheet1')
+    data.set_index('DateTime', inplace=True)
+    print(data)
+    # data.index = data.index.strftime('%Y-%m-%d %H:%M:%S')
+    print(data)
+    backtest = Backtest(data, TUPOC, exclusive_orders=True)
+    stats = backtest.run()
+    print(stats["_trades"])
+    print(stats)
