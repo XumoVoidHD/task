@@ -39,7 +39,7 @@ class svp:
 
     def get_data_binance(self):
         data = pd.read_csv(
-            "C:/Users/vedan/PycharmProjects/task/data/binance_data.csv")
+            "/data/binance_data.csv")
         data = data.rename(
             columns={'timestamp': 'DateTime', 'open': 'Open', "high": "High", 'low': 'Low', 'close': 'Close',
                      'volume': 'Volume'})
@@ -362,15 +362,10 @@ class TUPOC(Strategy):
             self.sell()
 
 
-
 if __name__ == "__main__":
-    file_path = "C:/Users/vedan/PycharmProjects/task/Volume Profile Indicator/Test29.xlsx"
+    file_path = "C:/Users/vedan/PycharmProjects/task/Volume Profile Indicator/USDCHF Test2.xlsx"
     data = pd.read_excel(file_path, sheet_name='Sheet1')
     data.set_index('DateTime', inplace=True)
-    print(data)
-    # data.index = data.index.strftime('%Y-%m-%d %H:%M:%S')
-    print(data)
-    backtest = Backtest(data, TUPOC, exclusive_orders=True)
+    backtest = Backtest(data, TUPOC,commission=0.007, exclusive_orders=True)
     stats = backtest.run()
-    print(stats["_trades"])
     print(stats)
