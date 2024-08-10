@@ -9,6 +9,9 @@ from multiprocessing import Pool
 from backtesting.lib import crossover
 
 
+pips = 7
+pips_weightage = 0.001
+
 class svp:
     def __init__(self):
         self.svp_data = pd.DataFrame
@@ -107,8 +110,8 @@ class svp:
             x = self.calculate_vah_val(df_one_hour)
             df_one_hour['VAH (Timezone)'] = x[0]
             df_one_hour['VAL (Timezone)'] = x[1]
-            df_one_hour['Resistance'] = x[0] + 6 * 0.0001
-            df_one_hour['Support'] = x[1] - 6 * 0.0001
+            df_one_hour['Resistance'] = x[0] + pips * pips_weightage
+            df_one_hour['Support'] = x[1] - pips * pips_weightage
             self.timezone_poc_dict[str(start_index)] = float(df_one_hour['POC_Price (Timezone)'].iloc[0])
             self.timezone_vah_dict[str(start_index)] = float(df_one_hour['VAH (Timezone)'].iloc[0])
             self.timezone_val_dict[str(start_index)] = float(df_one_hour['VAL (Timezone)'].iloc[0])
@@ -140,8 +143,8 @@ class svp:
             x = self.calculate_vah_val(df_one_hour)
             df_one_hour['VAH (Timezone)'] = x[0]
             df_one_hour['VAL (Timezone)'] = x[1]
-            df_one_hour['Resistance'] = x[0] + 6 * 0.0001
-            df_one_hour['Support'] = x[1] - 6 * 0.0001
+            df_one_hour['Resistance'] = x[0] + pips * pips_weightage
+            df_one_hour['Support'] = x[1] - pips * pips_weightage
             self.timezone_poc_dict[str(start_index)] = float(df_one_hour['POC_Price (Timezone)'].iloc[0])
             self.timezone_vah_dict[str(start_index)] = float(df_one_hour['VAH (Timezone)'].iloc[0])
             self.timezone_val_dict[str(start_index)] = float(df_one_hour['VAL (Timezone)'].iloc[0])
@@ -167,8 +170,8 @@ class svp:
             x = self.calculate_vah_val(df_one_hour)
             df_one_hour['VAH (Timezone)'] = x[0]
             df_one_hour['VAL (Timezone)'] = x[1]
-            df_one_hour['Resistance'] = x[0] + 6 * 0.0001
-            df_one_hour['Support'] = x[1] - 6 * 0.0001
+            df_one_hour['Resistance'] = x[0] + pips * pips_weightage
+            df_one_hour['Support'] = x[1] - pips * pips_weightage
             self.timezone_poc_dict[str(start_index)] = float(df_one_hour['POC_Price (Timezone)'].iloc[0])
             self.timezone_vah_dict[str(start_index)] = float(df_one_hour['VAH (Timezone)'].iloc[0])
             self.timezone_val_dict[str(start_index)] = float(df_one_hour['VAL (Timezone)'].iloc[0])
@@ -194,8 +197,8 @@ class svp:
             x = self.calculate_vah_val(df_one_hour)
             df_one_hour['VAH (Timezone)'] = x[0]
             df_one_hour['VAL (Timezone)'] = x[1]
-            df_one_hour['Resistance'] = x[0] + 6 * 0.0001
-            df_one_hour['Support'] = x[1] - 6 * 0.0001
+            df_one_hour['Resistance'] = x[0] + pips * pips_weightage
+            df_one_hour['Support'] = x[1] - pips * pips_weightage
             self.timezone_poc_dict[str(start_index)] = float(df_one_hour['POC_Price (Timezone)'].iloc[0])
             self.timezone_vah_dict[str(start_index)] = float(df_one_hour['VAH (Timezone)'].iloc[0])
             self.timezone_val_dict[str(start_index)] = float(df_one_hour['VAL (Timezone)'].iloc[0])
@@ -228,8 +231,8 @@ class svp:
             x = self.calculate_vah_val(df_one_hour)
             df_one_hour['VAH (Timezone)'] = x[0]
             df_one_hour['VAL (Timezone)'] = x[1]
-            df_one_hour['Resistance'] = x[0] + 6 * 0.0001
-            df_one_hour['Support'] = x[1] - 6 * 0.0001
+            df_one_hour['Resistance'] = x[0] + pips * pips_weightage
+            df_one_hour['Support'] = x[1] - pips * pips_weightage
             self.timezone_poc_dict[str(start_index)] = float(df_one_hour['POC_Price (Timezone)'].iloc[0])
             self.timezone_vah_dict[str(start_index)] = float(df_one_hour['VAH (Timezone)'].iloc[0])
             self.timezone_val_dict[str(start_index)] = float(df_one_hour['VAL (Timezone)'].iloc[0])
