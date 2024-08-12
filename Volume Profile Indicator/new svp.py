@@ -372,8 +372,8 @@ class svp:
         resistance = self.resistance
         support_box = []
         resistance_box = []
-        main_support_box = []
-        main_resistance_box = []
+        filtered_support_box = []
+        filtered_resistance_box = []
 
         for i in range(0, len(support)):
             temp = 0
@@ -392,14 +392,14 @@ class svp:
             resistance_box.append(resistance[i])
 
         for i in support_box:
-            if i[3] > 5:
-                main_support_box.append(i)
+            if i[3] >= 5:
+                filtered_support_box.append(i)
 
         for i in resistance_box:
-            if i[3] > 5:
-                main_resistance_box.append(i)
+            if i[3] >= 5:
+                filtered_resistance_box.append(i)
 
-        return main_resistance_box, main_support_box
+        return filtered_resistance_box, filtered_support_box
 
 
 class MT5Wrapper:
