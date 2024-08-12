@@ -566,14 +566,13 @@ class MT5Wrapper:
             return
 
         request = {
-            "action": mt5.TRADE_ACTION_DEAL,
+            "action": mt5.TRADE_ACTION_PENDING,
             "symbol": symbol,
             "volume": volume,
             "type": order_type,
-            "price": mt5.symbol_info_tick(symbol).ask if order_type == mt5.ORDER_TYPE_BUY else mt5.symbol_info_tick(
-                symbol).bid,
-            "sl": sl,
-            "tp": tp,
+            "price": price,
+            "deviation": 20,
+            "magic": 100,
             "comment": comment,
             "type_time": mt5.ORDER_TIME_GTC,  # Good till cancel
             "type_filling": mt5.ORDER_FILLING_IOC,
@@ -638,18 +637,57 @@ class MT5Wrapper:
 if __name__ == "__main__":
     start_time = time.time()
 
-    obj = svp()
-    data = obj.get_mt5_data("USDCHF.csv")
-    lists = obj.make_box(data)
-    wrapper = MT5Wrapper()
+    while True:
+        obj = svp()
+        wrapper = MT5Wrapper()
+        timezone = pytz.timezone("Etc/UTC")
+        time_only = (datetime.now() - timedelta(hours=3)).time()
+        date_only = (datetime.now() - timedelta(hours=3)).date()
+        year = date_only.year
+        month = date_only.month
+        day = date_only.day
 
-    latest_price = wrapper.get_latest_close_price("USDCHF")
-    resistance = lists[0]
-    support = lists[1]
-    closest_resistance = min(resistance, key=lambda x: abs(float(x[0]) - float(latest_price)))
-    closest_support = min(support, key=lambda x: float(x[0]) - float(latest_price))
-    wrapper.place_order("USDCHF", "buy", volume=1, price=closest_resistance[0])
-    wrapper.place_order("USDCHF", "sell", volume=1, price=closest_support[0])
+        start = datetime(year, month, day - 3, hour=7, tzinfo=timezone)
+        end = datetime(year, month, day-1, hour=10, tzinfo=timezone)
+        data = wrapper.get_historical_data("EURUSD", mt5.TIMEFRAME_M1, start, end)
+
+
+        data = data.rename(columns={'time': 'OpenTime', 'open': 'Open', "high": "High", 'low': 'Low', 'close': 'Close',
+                                    'tick_volume': 'Volume'})
+        data['OpenTime'] = pd.to_datetime(data['OpenTime'], unit='s')
+        data.set_index("OpenTime", inplace=True)
+        data.drop(columns=['spread', 'real_volume'], inplace=True)
+        lists = obj.make_box(data)
+
+
+        latest_price = wrapper.get_latest_close_price("EURUSD")
+        resistance = lists[0]
+        support = lists[1]
+        print(resistance)
+        temp_resistance = [item for item in resistance if item[0] >= latest_price]
+        temp_support = [item for item in support if item[0] <= latest_price]
+        try:
+            closest_resistance = min(temp_resistance, key=lambda x: abs(float(x[0]) - float(latest_price)))
+        except Exception as e:
+            closest_resistance = min(resistance, key=lambda x: abs(float(x[0]) - float(latest_price)))
+
+        try:
+            closest_support = min(temp_support, key=lambda x: abs(float(x[0]) - float(latest_price)))
+        except Exception as e:
+            closest_support = min(support, key=lambda x: abs(float(x[0]) - float(latest_price)))
+
+        # closest_resistance = min(resistance, key=lambda x: abs(float(x[0]) - float(latest_price)))
+        # closest_support = min(support, key=lambda x: float(x[0]) - float(latest_price))
+        # wrapper.login(account_id=5028843863, password="B!Vp1oYx", server="MetaQuotes-Demo")
+        sell = closest_resistance[0]
+        buy = closest_support[0]
+        print(buy)
+        print(sell)
+        print(latest_price)
+        wrapper.place_order("EURUSD", "buy", volume=0.1, price=buy)
+        wrapper.place_order("EURUSD", "sell", volume=0.1, price=sell)
+
+        time.sleep(60)
 
     end_time = time.time()
 
