@@ -557,8 +557,8 @@ class MT5Wrapper:
     def place_order(self, symbol, order_type, volume, price=None, sl=None, tp=None, comment=""):
         """Place an order with optional SL and TP"""
         order_dict = {
-            "buy": mt5.ORDER_TYPE_BUY,
-            "sell": mt5.ORDER_TYPE_SELL
+            "buy": mt5.ORDER_TYPE_BUY_LIMIT,
+            "sell": mt5.ORDER_TYPE_SELL_LIMIT
         }
         order_type = order_dict.get(order_type.lower())
         if order_type is None:
@@ -637,6 +637,7 @@ class MT5Wrapper:
 
 if __name__ == "__main__":
     start_time = time.time()
+
     obj = svp()
     data = obj.get_mt5_data("USDCHF.csv")
     lists = obj.make_box(data)
@@ -647,9 +648,8 @@ if __name__ == "__main__":
     support = lists[1]
     closest_resistance = min(resistance, key=lambda x: abs(float(x[0]) - float(latest_price)))
     closest_support = min(support, key=lambda x: float(x[0]) - float(latest_price))
-    print(latest_price)
-    print(closest_resistance)
-    print(closest_support)
+    wrapper.place_order("USDCHF", "buy", volume=1, price=closest_resistance[0])
+    wrapper.place_order("USDCHF", "sell", volume=1, price=closest_support[0])
 
     end_time = time.time()
 
