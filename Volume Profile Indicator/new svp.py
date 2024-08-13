@@ -714,7 +714,7 @@ if __name__ == "__main__":
     closest_support = min(support, key=lambda x: float(x[0]) - float(latest_price))
     wrapper.login(account_id=5028843863, password="B!Vp1oYx", server="MetaQuotes-Demo")
 
-    sell = int(closest_resistance[0] / 0.00001) * 0.00001
+    sell = closest_resistance[0]
     buy = closest_support[0]
 
 
