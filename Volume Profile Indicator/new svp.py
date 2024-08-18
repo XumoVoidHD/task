@@ -730,6 +730,7 @@ if __name__ == "__main__":
 
     closest_resistance = min(resistance, key=lambda x: abs(float(x[0]) - float(latest_price)))
     closest_support = min(support, key=lambda x: float(x[0]) - float(latest_price))
+
     wrapper.login(account_id=acc_id, password=password, server=server)
 
     sell = closest_resistance[0]
