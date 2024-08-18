@@ -9,8 +9,9 @@ from multiprocessing import Pool
 from backtesting.lib import crossover
 
 
-pips = 7
+pips = 10
 pips_weightage = 0.001
+
 
 class svp:
     def __init__(self):

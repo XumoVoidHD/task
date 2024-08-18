@@ -22,7 +22,7 @@ def get_data_stock(symbol="AAPL", timeframe="5minute", folder="data_5min"):
 
 
 def get_data_binance():
-    data = pd.read_csv("C:/Users/vedan/PycharmProjects/task/data/bitstampUSD_1-min_data_2012-01-01_to_2021-03-31.csv")
+    data = pd.read_csv("/data/bitstampUSD_1-min_data_2012-01-01_to_2021-03-31.csv")
     data = data.rename(columns={'timestamp': 'DateTime', 'open': 'Open', "high": "High", 'low': 'Low', 'close': 'Close',
                                 'volume': 'Volume'})
     data['DateTime'] = pd.to_datetime(data['DateTime'], unit='s')

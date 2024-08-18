@@ -1,11 +1,14 @@
 import os
 import sys
-import pandas as pd
-import time
 import matplotlib.pyplot as plt
-import numpy as np
+import MetaTrader5 as mt5
+import pandas as pd
+from datetime import datetime, timedelta
+import time
+import pytz
 
-pips = 20
+
+pips = 6
 pips_weightage = 0.0001
 
 class svp:
@@ -361,28 +364,401 @@ class svp:
         print(f"Capital: {capital}")
 
 
+class MT5Wrapper:
+    def __init__(self, path=None):
+        if path is not None:
+            if not mt5.initialize(path):
+                print("Initialize() failed, error code =", mt5.last_error())
+        else:
+            if not mt5.initialize():
+                print("Initialize() failed, error code =", mt5.last_error())
+
+    def login(self, account_id, password, server):
+        """Login to MT5 account"""
+        session = mt5.login(account_id, password=password, server=server)
+        if not session:
+            print("Login failed, error code =", mt5.last_error())
+        else:
+            print("Logged in", session)
+
+    def get_latest_close_price(self, symbol, timeframe=mt5.TIMEFRAME_M1):
+        """Get the latest close price for a symbol."""
+        # Ensure the symbol is available and subscribed
+        if not mt5.symbol_select(symbol, True):
+            print(f"Failed to select symbol {symbol}")
+            return None
+
+        # Get the current date and time
+        current_time = datetime.now()
+
+        # Fetch the latest candle
+        rates = mt5.copy_rates_from_pos(symbol, timeframe, 0, 1)
+
+        if rates is None or len(rates) == 0:
+            print("Error getting historical data, error code =", mt5.last_error())
+            return None
+        else:
+            # Return the close price of the latest candle
+            return rates[0]['close']
+
+    def get_quote(self, symbol):
+        """Get current quote for a symbol"""
+        quote = mt5.symbol_info_tick(symbol)
+        time.sleep(2)
+        if quote is None:
+            print("Error getting quote, error code =", mt5.last_error())
+        else:
+            print(quote)
+            return quote
+
+    def get_historical_data(self, symbol, timeframe, start_time, end_time):
+        """Get historical data for a symbol"""
+        rates = mt5.copy_rates_range(symbol, timeframe, start_time, end_time)
+        if rates is None:
+            print("Error getting historical data, error code =", mt5.last_error())
+        else:
+            return pd.DataFrame(rates)
+
+    def send_order_with_tp(self, symbol, lot, buy, sell, id_position=None, tp=None, sl=None,
+                           comment="No specific comment", magic=0):
+        # Initialize the bound between MT5 and Python
+        mt5.initialize()
+        qty = lot
+
+        # Extract filling_mode
+        filling_type = mt5.ORDER_FILLING_FOK
+
+        """ OPEN A TRADE """
+        if buy and id_position is None:
+            request = {
+                "action": mt5.TRADE_ACTION_DEAL,
+                "symbol": symbol,
+                "volume": lot,
+                "type": mt5.ORDER_TYPE_BUY,
+                "price": mt5.symbol_info_tick(symbol).ask,
+                "deviation": 10,
+                "magic": magic,
+                "comment": comment,
+                "type_filling": filling_type,
+                "type_time": mt5.ORDER_TIME_GTC
+            }
+            if tp is not None:
+                request["tp"] = tp
+            if sl is not None:
+                request["sl"] = sl
+
+            result = mt5.order_send(request)
+            return result
+
+        if sell and id_position is None:
+            request = {
+                "action": mt5.TRADE_ACTION_DEAL,
+                "symbol": symbol,
+                "volume": lot,
+                "type": mt5.ORDER_TYPE_SELL,
+                "price": mt5.symbol_info_tick(symbol).bid,
+                "deviation": 10,
+                "magic": magic,
+                "comment": comment,
+                "type_filling": filling_type,
+                "type_time": mt5.ORDER_TIME_GTC
+            }
+            if tp is not None:
+                request["tp"] = tp
+            if sl is not None:
+                request["sl"] = sl
+
+            result = mt5.order_send(request)
+            return result
+
+        """ CLOSE A TRADE """
+        if buy and id_position is not None:
+            request = {
+                "position": id_position,
+                "action": mt5.TRADE_ACTION_DEAL,
+                "symbol": symbol,
+                "volume": lot,
+                "type": mt5.ORDER_TYPE_SELL,
+                "price": mt5.symbol_info_tick(symbol).bid,
+                "deviation": 10,
+                "magic": magic,
+                "comment": comment,
+                "type_filling": filling_type,
+                "type_time": mt5.ORDER_TIME_GTC
+            }
+            if tp is not None:
+                request["tp"] = tp
+            if sl is not None:
+                request["sl"] = sl
+
+            result = mt5.order_send(request)
+            return result
+
+        if sell and id_position is not None:
+            request = {
+                "position": id_position,
+                "action": mt5.TRADE_ACTION_DEAL,
+                "symbol": symbol,
+                "volume": lot,
+                "type": mt5.ORDER_TYPE_BUY,
+                "price": mt5.symbol_info_tick(symbol).ask,
+                "deviation": 10,
+                "magic": magic,
+                "comment": comment,
+                "type_filling": filling_type,
+                "type_time": mt5.ORDER_TIME_GTC
+            }
+            if tp is not None:
+                request["tp"] = tp
+            if sl is not None:
+                request["sl"] = sl
+
+            result = mt5.order_send(request)
+            return result
+
+    def place_order(self, symbol, order_type, volume, price=None, sl=None, tp=None, comment=""):
+        """Place an order with optional SL and TP"""
+        order_dict = {
+            "buy": mt5.ORDER_TYPE_BUY,
+            "sell": mt5.ORDER_TYPE_SELL
+        }
+        order_type = order_dict.get(order_type.lower())
+        if order_type is None:
+            print("Invalid order type")
+            return
+
+        request = {
+            "action": mt5.TRADE_ACTION_DEAL,
+            "symbol": symbol,
+            "volume": volume,
+            "type": order_type,
+            "price": mt5.symbol_info_tick(symbol).ask if order_type == mt5.ORDER_TYPE_BUY else mt5.symbol_info_tick(
+                symbol).bid,
+            "sl": sl,
+            "tp": tp,
+            "comment": comment,
+            "type_time": mt5.ORDER_TIME_GTC,  # Good till cancel
+            "type_filling": mt5.ORDER_FILLING_IOC,
+        }
+
+        if price is not None:
+            request["price"] = price
+
+        result = mt5.order_send(request)
+        time.sleep(2)
+        print(result)
+        if result.retcode != mt5.TRADE_RETCODE_DONE:
+            print("Order failed, retcode =", result.retcode)
+        else:
+            return result
+
+    def get_available_balance(self):
+        """Get available account balance"""
+        account_info = mt5.account_info()
+        if account_info is None:
+            print("Failed to get account balance, error code =", mt5.last_error())
+            return None
+        else:
+            return account_info.balance
+
+    # New function to get symbol information
+    def get_symbol_info(self, symbol):
+        """Get information about a symbol"""
+        info = mt5.symbol_info(symbol)
+        if info is None:
+            print(f"Failed to get symbol info for {symbol}, error code =", mt5.last_error())
+            return None
+        else:
+            return info
+
+    # New function to calculate the number of lots for a given USD value
+    def calculate_lots(self, symbol, usd_amount):
+        """Calculate the number of lots for a given USD amount willing to spend on a trade"""
+        symbol_info = self.get_symbol_info(symbol)
+        # print(symbol_info)
+        if symbol_info is None:
+            return None
+
+        if not symbol_info.trade_contract_size:
+            print(f"Failed to get contract size for {symbol}")
+            return None
+
+        price = self.get_latest_close_price(symbol)
+        if not price:
+            print(f"Failed to get current ask price for {symbol}")
+            return None
+
+        one_lot_value = symbol_info.trade_contract_size * price
+        lots = usd_amount / one_lot_value
+        return lots
+
+    def shutdown(self):
+        """Shutdown the MT5 terminal"""
+        mt5.shutdown()
+
 
 if __name__ == "__main__":
-    start_time = time.time()
-    obj = svp()
-    data = obj.get_mt5_data("USDCHF.csv")
-    df = obj.combined(data)
-    # obj.backtest()
 
-    to_excel = True
-    plot = False
-    show_data = False
-    if to_excel:
-        excel_path = "USDCHF Test2.xlsx"
-        df.to_excel(excel_path, index=True, sheet_name="Sheet1")
-    if plot:
-        obj.plot(df)
-    if show_data:
-        with pd.option_context('display.max_rows', None, 'display.max_columns', None):
-            print(df)
+    timezone = pytz.timezone("Etc/UTC")
+    # start_time = time.time()
+    # date_time = datetime.fromtimestamp(start_time)
+    # print(date_time)
+    # formatted_date_time = date_time.strftime('%Y-%m-%d %H:%M:%S')
+    # time_only = date_time.time()
+    # print(time_only)
+    # formatted_time = date_time.strftime('%H:%M:%S')
+    # print(formatted_time)
+    # date_only = date_time.date()
+    # year = date_only.year
+    # month = date_only.month
+    # day = date_only.day
+    # formatted_date = date_time.strftime("%Y-%m-%d")
+    wrapper = MT5Wrapper()
+    star = svp()
 
-    end_time = time.time()
+    while True:
+        now = datetime.now()
+        if now.second == 1:
+            print("Start")
+            break
+        time.sleep(0.5)
 
-    print(f"Time taken to execute this program is {end_time-start_time} seconds")
+    while True:
+        current_time = (datetime.now() - timedelta(hours=3)).time()
+        print(current_time)
+        start_time = datetime.strptime("10:01:00", '%H:%M:%S').time()
+        end_time = datetime.strptime("12:00:00", '%H:%M:%S').time()
+        if start_time <= current_time < end_time:
+            print("Zone 1")
+            time_only = (datetime.now() - timedelta(hours=3)).time()
+            date_only = (datetime.now() - timedelta(hours=3)).date()
+            year = date_only.year
+            month = date_only.month
+            day = date_only.day
+
+            start = datetime(year, month, day - 3, hour=7, tzinfo=timezone)
+            end = datetime(year, month, day, hour=10, tzinfo=timezone)
+            data = wrapper.get_historical_data("USDCHF", mt5.TIMEFRAME_M1, start, end)
+            data = data.rename(columns={'time': 'OpenTime', 'open': 'Open', "high": "High", 'low': 'Low', 'close': 'Close', 'tick_volume': 'Volume'})
+            data['OpenTime'] = pd.to_datetime(data['OpenTime'], unit='s')
+            data.set_index("OpenTime", inplace=True)
+            data.drop(columns=['spread', 'real_volume'], inplace=True)
+            # with pd.option_context('display.max_rows', None, 'display.max_columns', None):
+            #     print(data)
+
+            df = star.combined(data)
+            with pd.option_context('display.max_rows', None, 'display.max_columns', None):
+                print(df)
+            index = f"{year}-{month}-{day} 10:00:00"
+            resistance = float(df.at[index, 'Resistance'])
+            support = float(df.at[index, 'Support'])
+
+            while current_time < datetime.strptime("12:00:00", '%H:%M:%S').time():
+                close = wrapper.get_latest_close_price("USDCHF")
+                print(f"Close: {close}")
+                print(f"Resistance: {resistance}")
+                print(f"Support: {support}")
+                if close > resistance:
+                    print("Buy")
+                elif close < support:
+                    print("Sell")
+                else:
+                    print(datetime.now().time())
+                    print("Iteration")
+                time.sleep(60)
+                current_time = (datetime.now() - timedelta(hours=3)).time()
 
 
+        current_time = (datetime.now() - timedelta(hours=3)).time()
+        print(current_time)
+        start_time = datetime.strptime("22:30:00", '%H:%M:%S').time()
+        end_time = datetime.strptime("5:30:00", '%H:%M:%S').time()
+        if start_time <= current_time < end_time:
+            print("Zone 2")
+            time_only = (datetime.now() - timedelta(hours=3)).time()
+            date_only = (datetime.now() - timedelta(hours=3)).date()
+            year = date_only.year
+            month = date_only.month
+            day = date_only.day
+
+            start = datetime(year, month, day - 3, hour=22, minute=30, tzinfo=timezone)
+            end = datetime(year, month, day, hour=5, minute=30, tzinfo=timezone)
+            data = wrapper.get_historical_data("USDCHF", mt5.TIMEFRAME_M1, start, end)
+            data = data.rename(
+                columns={'time': 'OpenTime', 'open': 'Open', "high": "High", 'low': 'Low', 'close': 'Close',
+                         'tick_volume': 'Volume'})
+            data['OpenTime'] = pd.to_datetime(data['OpenTime'], unit='s')
+            data.set_index("OpenTime", inplace=True)
+            data.drop(columns=['spread', 'real_volume'], inplace=True)
+            # with pd.option_context('display.max_rows', None, 'display.max_columns', None):
+            #     print(data)
+
+            df = star.combined(data)
+            # with pd.option_context('display.max_columns', None):
+            #     print(df)
+            index = f"{year}-{month}-{day} 5:30:00"
+            resistance = float(df.at[index, 'Resistance'])
+            support = float(df.at[index, 'Support'])
+
+            while current_time < datetime.strptime("7:00:00", '%H:%M:%S').time():
+                close = wrapper.get_latest_close_price("USDCHF")
+                print(f"Close: {close}")
+                print(f"Resistance: {resistance}")
+                print(f"Support: {support}")
+                if close > resistance:
+                    print("Buy")
+                elif close < support:
+                    print("Sell")
+                else:
+                    print(datetime.now().time())
+                    print("Iteration")
+                time.sleep(60)
+                current_time = (datetime.now() - timedelta(hours=3)).time()
+
+        current_time = (datetime.now() - timedelta(hours=3)).time()
+        print(current_time)
+        start_time = datetime.strptime("12:01:00", '%H:%M:%S').time()
+        end_time = datetime.strptime("17:00:00", '%H:%M:%S').time()
+        if start_time <= current_time < end_time:
+            print("Zone 3")
+            time_only = (datetime.now() - timedelta(hours=3)).time()
+            date_only = (datetime.now() - timedelta(hours=3)).date()
+            year = date_only.year
+            month = date_only.month
+            day = date_only.day
+
+            start = datetime(year, month, day - 3, hour=12, tzinfo=timezone)
+            end = datetime(year, month, day, hour=17, tzinfo=timezone)
+            data = wrapper.get_historical_data("USDCHF", mt5.TIMEFRAME_M1, start, end)
+            data = data.rename(
+                columns={'time': 'OpenTime', 'open': 'Open', "high": "High", 'low': 'Low', 'close': 'Close',
+                         'tick_volume': 'Volume'})
+            data['OpenTime'] = pd.to_datetime(data['OpenTime'], unit='s')
+            data.set_index("OpenTime", inplace=True)
+            data.drop(columns=['spread', 'real_volume'], inplace=True)
+            # with pd.option_context('display.max_rows', None, 'display.max_columns', None):
+            #     print(data)
+
+            df = star.combined(data)
+            # with pd.option_context('display.max_columns', None):
+            #     print(df)
+            index = f"{year}-{month}-{day} 17:00:00"
+            resistance = float(df.at[index, 'Resistance'])
+            support = float(df.at[index, 'Support'])
+
+            while current_time < datetime.strptime("22:30:00", '%H:%M:%S').time():
+                close = wrapper.get_latest_close_price("USDCHF")
+                print(f"Close: {close}")
+                print(f"Resistance: {resistance}")
+                print(f"Support: {support}")
+                if close > resistance:
+                    print("Buy")
+                elif close < support:
+                    print("Sell")
+                else:
+                    print(datetime.now().time())
+                    print("Iteration")
+                time.sleep(60)
+                current_time = (datetime.now() - timedelta(hours=3)).time()
+        print("Sleep")
+        time.sleep(60)
