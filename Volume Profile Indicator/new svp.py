@@ -18,6 +18,7 @@ buy_tp_ratio = 0.15
 buy_sl_ratio = 0.05
 sell_tp_ratio = 0.15
 sell_sl_ratio = 0.05
+volume = 0.1
 
 class svp:
     def __init__(self):
@@ -746,8 +747,8 @@ if __name__ == "__main__":
     print(f"Buy Price: {buy}")
     print(f"Sell Price: {sell}")
     print(f"Latest price: {latest_price}")
-    wrapper.place_order(symbol, "buy", volume=0.1, price=buy, sl=buy_sl, tp=buy_tp)
-    wrapper.place_order(symbol, "sell", volume=0.1, price=sell, sl=sell_sl, tp=sell_tp)
+    wrapper.place_order(symbol, "buy", volume=volume, price=buy, sl=buy_sl, tp=buy_tp)
+    wrapper.place_order(symbol, "sell", volume=volume, price=sell, sl=sell_sl, tp=sell_tp)
 
     end_time = time.time()
 
