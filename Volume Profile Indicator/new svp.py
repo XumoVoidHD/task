@@ -1,17 +1,23 @@
 import os
 import sys
-import matplotlib.pyplot as plt
 import MetaTrader5 as mt5
 import pandas as pd
 from datetime import datetime, timedelta
 import time
 import pytz
 import matplotlib.pyplot as plt
+import talib
 
-
+acc_id = 5028843863
+password = "B!Vp1oYx"
+server = "MetaQuotes-Demo"
 pips = 6
 pips_weightage = 0.0001
-
+symbol = "AUDUSD"
+buy_tp_ratio = 0.15
+buy_sl_ratio = 0.05
+sell_tp_ratio = 0.15
+sell_sl_ratio = 0.05
 
 class svp:
     def __init__(self):
@@ -577,6 +583,7 @@ class MT5Wrapper:
             "price": price,
             "deviation": 20,
             "magic": 100,
+
             "comment": comment,
             "type_time": mt5.ORDER_TIME_GTC,  # Good till cancel
             "type_filling": mt5.ORDER_FILLING_IOC,
@@ -584,6 +591,11 @@ class MT5Wrapper:
 
         if price is not None:
             request["price"] = price
+
+        if tp is not None:
+            request["tp"] = tp
+        if sl is not None:
+            request["sl"] = sl
 
         result = mt5.order_send(request)
         time.sleep(2)
@@ -637,6 +649,11 @@ class MT5Wrapper:
         """Shutdown the MT5 terminal"""
         mt5.shutdown()
 
+def atr_calc(data):
+    atr = talib.ATR(data['High'], data['Low'], data['Close'], timeperiod=14)
+
+    return round(atr.iloc[-1], 5)
+
 
 if __name__ == "__main__":
     start_time = time.time()
@@ -651,9 +668,9 @@ if __name__ == "__main__":
     month = date_only.month
     day = date_only.day
 
-    start = datetime(year, month, day - 12, hour=7, tzinfo=timezone)
+    start = datetime(year, month, day - 4, hour=7, tzinfo=timezone)
     end = datetime(year, month, day, hour=10, tzinfo=timezone)
-    data = wrapper.get_historical_data("USDSEK", mt5.TIMEFRAME_M1, start, end)
+    data = wrapper.get_historical_data(symbol, mt5.TIMEFRAME_M1, start, end)
 
     data = data.rename(columns={'time': 'OpenTime', 'open': 'Open', "high": "High", 'low': 'Low', 'close': 'Close',
                                 'tick_volume': 'Volume'})
@@ -661,70 +678,76 @@ if __name__ == "__main__":
     data.set_index("OpenTime", inplace=True)
     data.drop(columns=['spread', 'real_volume'], inplace=True)
     lists = obj.make_box(data)
-    print(data)
+    # with pd.option_context('display.max_rows', None):
+    #     print(obj.svp_data)
 
-    latest_price = wrapper.get_latest_close_price("USDSEK")
+    latest_price = wrapper.get_latest_close_price(symbol)
     resistance = lists[0]
     support = lists[1]
 
-    x1 = []
-    y1 = []
-    for i in resistance:
-        x1.append(i[0])
-        y1.append(i[2])
-
-    x2 = []
-    y2 = []
-    for i in support:
-        x2.append(i[0])
-        y2.append(i[2])
-
-    x3 = []
-    y3 = []
-    for i in obj.close:
-        x3.append(i[0])
-        y3.append(i[2])
-
+    # x1 = []
+    # y1 = []
+    # for i in resistance:
+    #     x1.append(i[0])
+    #     y1.append(i[2])
+    #
+    # x2 = []
+    # y2 = []
+    # for i in support:
+    #     x2.append(i[0])
+    #     y2.append(i[2])
+    #
+    # x3 = []
+    # y3 = []
+    # for i in obj.close:
+    #     x3.append(i[0])
+    #     y3.append(i[2])
+    #
+    # lis = [latest_price] * len(y1)
+    # plt.plot(y1, x1, marker='o')
+    # plt.plot(y2, x2, marker="p")
+    # plt.plot(y1, lis, marker=".")
+    # plt.plot(y3, x3, marker="*")
+    # plt.xlabel('X-axis Label')
+    # plt.ylabel('Y-axis Label')
+    # plt.title('Simple Line Plot')
+    # plt.show()
 
     temp_resistance = [item for item in resistance if item[0] >= latest_price]
     temp_support = [item for item in support if item[0] <= latest_price]
 
-    lis = [latest_price] * len(y1)
-    plt.plot(y1, x1, marker='o')
-    plt.plot(y2, x2, marker="p")
-    plt.plot(y1, lis, marker=".")
-    plt.plot(y3, x3, marker="*")
-    plt.xlabel('X-axis Label')
-    plt.ylabel('Y-axis Label')
-    plt.title('Simple Line Plot')
-    # plt.show()
-
-
     try:
         closest_resistance = min(temp_resistance, key=lambda x: abs(float(x[0]) - float(latest_price)))
     except Exception as e:
+        print("fail1")
         closest_resistance = min(resistance, key=lambda x: abs(float(x[0]) - float(latest_price)))
-
     try:
         closest_support = min(temp_support, key=lambda x: abs(float(x[0]) - float(latest_price)))
     except Exception as e:
+        print("fail2")
         closest_support = min(support, key=lambda x: abs(float(x[0]) - float(latest_price)))
 
     closest_resistance = min(resistance, key=lambda x: abs(float(x[0]) - float(latest_price)))
     closest_support = min(support, key=lambda x: float(x[0]) - float(latest_price))
-    wrapper.login(account_id=5028843863, password="B!Vp1oYx", server="MetaQuotes-Demo")
+    wrapper.login(account_id=acc_id, password=password, server=server)
 
     sell = closest_resistance[0]
     buy = closest_support[0]
+
+    buy_val = buy + 2 * atr_calc(data)
+    buy_tp = buy_val + (buy_val*buy_tp_ratio)
+    buy_sl = buy_val - (buy_val*buy_sl_ratio)
+
+    sell_val = sell + 2 * atr_calc(data)
+    sell_tp = sell_val - (sell_val*sell_tp_ratio)
+    sell_sl = sell_val + (sell_val*sell_sl_ratio)
 
 
     print(f"Buy Price: {buy}")
     print(f"Sell Price: {sell}")
     print(f"Latest price: {latest_price}")
-    wrapper.place_order("USDSEK", "buy", volume=0.1, price=buy)
-    wrapper.place_order("USDSEK", "sell", volume=0.5, price=sell)
-
-    print(wrapper.get_symbol_info("USDSEK"))
+    wrapper.place_order(symbol, "buy", volume=0.1, price=buy, sl=buy_sl, tp=buy_tp)
+    wrapper.place_order(symbol, "sell", volume=0.1, price=sell, sl=sell_sl, tp=sell_tp)
 
     end_time = time.time()
 
