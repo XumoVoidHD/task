@@ -11,14 +11,16 @@ import talib
 acc_id = 5028843863
 password = "B!Vp1oYx"
 server = "MetaQuotes-Demo"
-pips = 6
+pips = 10
 pips_weightage = 0.0001
-symbol = "AUDUSD"
+symbol = "USDSEK"
 buy_tp_ratio = 0.15
 buy_sl_ratio = 0.05
 sell_tp_ratio = 0.15
 sell_sl_ratio = 0.05
 volume = 0.1
+last_days = 7
+
 
 class svp:
     def __init__(self):
@@ -669,7 +671,7 @@ if __name__ == "__main__":
     month = date_only.month
     day = date_only.day
 
-    start = datetime(year, month, day - 4, hour=7, tzinfo=timezone)
+    start = datetime(year, month, day - last_days, hour=7, tzinfo=timezone)
     end = datetime(year, month, day, hour=10, tzinfo=timezone)
     data = wrapper.get_historical_data(symbol, mt5.TIMEFRAME_M1, start, end)
 
@@ -728,8 +730,8 @@ if __name__ == "__main__":
         print("fail2")
         closest_support = min(support, key=lambda x: abs(float(x[0]) - float(latest_price)))
 
-    closest_resistance = min(resistance, key=lambda x: abs(float(x[0]) - float(latest_price)))
-    closest_support = min(support, key=lambda x: float(x[0]) - float(latest_price))
+    # closest_resistance = min(resistance, key=lambda x: abs(float(x[0]) - float(latest_price)))
+    # closest_support = min(support, key=lambda x: float(x[0]) - float(latest_price))
 
     wrapper.login(account_id=acc_id, password=password, server=server)
 
@@ -748,8 +750,17 @@ if __name__ == "__main__":
     print(f"Buy Price: {buy}")
     print(f"Sell Price: {sell}")
     print(f"Latest price: {latest_price}")
-    wrapper.place_order(symbol, "buy", volume=volume, price=buy, sl=buy_sl, tp=buy_tp)
-    wrapper.place_order(symbol, "sell", volume=volume, price=sell, sl=sell_sl, tp=sell_tp)
+
+    if temp_support == []:
+        print("No valid price for buying available")
+    else:
+        wrapper.place_order(symbol, "buy", volume=volume, price=buy, sl=buy_sl, tp=buy_tp)
+
+    if temp_resistance == []:
+        print("No valid price for selling available")
+    else:
+        wrapper.place_order(symbol, "sell", volume=volume, price=sell, sl=sell_sl, tp=sell_tp)
+
 
     end_time = time.time()
 
