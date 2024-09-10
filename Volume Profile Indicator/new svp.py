@@ -21,6 +21,8 @@ sell_sl_ratio = 0.05
 volume = 0.1
 last_days = 3
 multiplier = 1
+tp_sl_ratio = 4
+risk_percentage = 0.01
 
 
 class svp:
@@ -389,6 +391,7 @@ class svp:
         filtered_support_box = []
         filtered_resistance_box = []
 
+
         for i in range(0, len(support)):
             temp = 0
             for j in range(i, len(support)):
@@ -658,6 +661,11 @@ class MT5Wrapper:
 
         return False
 
+    def equity(self):
+
+        account_info = mt5.account_info()
+        return account_info[13]
+
     def shutdown(self):
         """Shutdown the MT5 terminal"""
         mt5.shutdown()
@@ -691,7 +699,6 @@ if __name__ == "__main__":
         buy_order_placed = False
         sell_order_placed = True
 
-
         obj = svp()
         wrapper = MT5Wrapper()
         timezone = pytz.timezone("Etc/UTC")
@@ -700,6 +707,7 @@ if __name__ == "__main__":
         year = date_only.year
         month = date_only.month
         day = date_only.day
+        equity = wrapper.equity()
 
         date_values = lambda: get_date_and_past_date(year, month, day, last_days)
         r = date_values()
@@ -722,34 +730,6 @@ if __name__ == "__main__":
         resistance = lists[0]
         support = lists[1]
 
-        # x1 = []
-        # y1 = []
-        # for i in resistance:
-        #     x1.append(i[0])
-        #     y1.append(i[2])
-        #
-        # x2 = []
-        # y2 = []
-        # for i in support:
-        #     x2.append(i[0])
-        #     y2.append(i[2])
-        #
-        # x3 = []
-        # y3 = []
-        # for i in obj.close:
-        #     x3.append(i[0])
-        #     y3.append(i[2])
-        #
-        # lis = [latest_price] * len(y1)
-        # plt.plot(y1, x1, marker='o')
-        # plt.plot(y2, x2, marker="p")
-        # plt.plot(y1, lis, marker=".")
-        # plt.plot(y3, x3, marker="*")
-        # plt.xlabel('X-axis Label')
-        # plt.ylabel('Y-axis Label')
-        # plt.title('Simple Line Plot')
-        # plt.show()
-
         temp_resistance = [item for item in resistance if item[0] >= latest_price]
         temp_support = [item for item in support if item[0] <= latest_price]
 
@@ -760,12 +740,11 @@ if __name__ == "__main__":
             closest_resistance = min(resistance, key=lambda x: abs(float(x[0]) - float(latest_price)))
         try:
             closest_support = min(temp_support, key=lambda x: abs(float(x[0]) - float(latest_price)))
+
         except Exception as e:
             print("fail2")
             closest_support = min(support, key=lambda x: abs(float(x[0]) - float(latest_price)))
 
-        # closest_resistance = min(resistance, key=lambda x: abs(float(x[0]) - float(latest_price)))
-        # closest_support = min(support, key=lambda x: float(x[0]) - float(latest_price))
 
         wrapper.login(account_id=acc_id, password=password, server=server)
 
@@ -773,24 +752,27 @@ if __name__ == "__main__":
         buy = closest_support[0]
 
         buy_val = buy + multiplier * atr_calc(data)
-        buy_tp = buy_val + (buy_val*buy_tp_ratio)
-        buy_sl = buy_val - (buy_val*buy_sl_ratio)
+        buy_sl = buy_val - 2 * atr_calc(data)
+        risk = buy_val - buy_sl
+        buy_tp = buy_val + tp_sl_ratio*risk
 
-        sell_val = sell + multiplier * atr_calc(data)
-        sell_tp = sell_val - (sell_val*sell_tp_ratio)
-        sell_sl = sell_val + (sell_val*sell_sl_ratio)
+        sell_val = sell - multiplier * atr_calc(data)
+        sell_sl = sell_val + 2 * atr_calc(data)
+        risk = sell_sl - sell_val
+        sell_tp = sell_val - tp_sl_ratio * risk
 
 
-        print(f"Buy Price: {buy}")
-        print(f"Sell Price: {sell}")
-        print(f"Latest price: {latest_price}")
+        trade_size = ((risk_percentage/100) * equity) / ((buy_val - buy_sl)/buy_val)
+        qty = trade_size / wrapper.get_latest_close_price(symbol)
+        qty /= wrapper.get_symbol_info(symbol)[49] #100,000
+        qty = round(qty,2)
 
         if temp_support == []:
             print("No valid price for buying available")
         else:
             buy_order_placed = wrapper.check_order(symbol=symbol, type=2)
             if not buy_order_placed:
-                wrapper.place_order(symbol, "buy", volume=volume, price=buy, sl=buy_sl, tp=buy_tp)
+                wrapper.place_order(symbol, "buy", volume=qty, price=buy_val, sl=buy_sl, tp=buy_tp)
                 buy_order_placed = True
             else:
                 print("A buy order is already open")
@@ -800,10 +782,14 @@ if __name__ == "__main__":
         else:
             sell_order_placed = wrapper.check_order(symbol=symbol, type=3)
             if not sell_order_placed:
-                wrapper.place_order(symbol, "sell", volume=volume, price=sell, sl=sell_sl, tp=sell_tp)
+                # print(wrapper.get_latest_close_price(symbol))
+                # print(sell_val)
+                wrapper.place_order(symbol, "sell", volume=1-qty, price=sell_val, sl=sell_sl, tp=sell_tp)
                 sell_order_placed = True
             else:
                 print("A sell order is already open")
+
         print("skip")
+
 
         time.sleep(60)
