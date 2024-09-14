@@ -811,7 +811,7 @@ if __name__ == "__main__":
 
         print("skip")
 
-        time.sleep(5)
+        time.sleep(60)
 
         df = wrapper.order_histroy()
         for i in range(-1, -5, -1):
@@ -838,5 +838,3 @@ if __name__ == "__main__":
         print(len(invalid_resistance_prices))
         print(invalid_support_prices)
 
-
-        time.sleep(10)
