@@ -8,6 +8,10 @@ import pytz
 import matplotlib.pyplot as plt
 import talib
 
+
+pd.set_option('display.max_columns', 500)
+pd.set_option('display.width', 1500)
+
 acc_id = 5028843863
 password = "B!Vp1oYx"
 server = "MetaQuotes-Demo"
@@ -678,7 +682,24 @@ class MT5Wrapper:
 
         return df_cleaned
 
+    def position_histroy(self, position_id):
+        position_history_orders = mt5.history_orders_get(position=position_id)
+        data = pd.DataFrame
+        if position_history_orders == None:
+            print("No orders with position #{}".format(position_id))
+            print("error code =", mt5.last_error())
+        elif len(position_history_orders) > 0:
+            df = pd.DataFrame(list(position_history_orders), columns=position_history_orders[0]._asdict().keys())
+            df.drop(
+                ['time_expiration', 'type_time', 'state', 'position_by_id', 'reason', 'volume_current',
+                 'price_stoplimit', 'sl',
+                 'tp'], axis=1, inplace=True)
+            df['time_setup'] = pd.to_datetime(df['time_setup'], unit='s')
+            df['time_done'] = pd.to_datetime(df['time_done'], unit='s')
+            data = df
+            # print(df)
 
+        return data
 
     def shutdown(self):
         """Shutdown the MT5 terminal"""
@@ -816,25 +837,16 @@ if __name__ == "__main__":
         df = wrapper.order_histroy()
         for i in range(-1, -5, -1):
             if df[4].iloc[i] == 1 and df[13].iloc[i] < 0 and df[15].iloc[i] == symbol:
-                volume = df[9].iloc[i]
-                price_sold_at = df[10].iloc[i]
-                loss = df[13].iloc[i]
-                x = calculate_original_price(loss, volume, price_sold_at)
-                x = float(x)
-                for j in range(-20, 20, 1):
-                    x = x + (0.00001*j)
-                    invalid_support_prices.append(x)
+                position_id = int(df[7].iloc[i])
+                data = wrapper.position_histroy(position_id)
+                ask_price = data['price_open'].iloc[0]
+                invalid_support_prices.append(ask_price)
             if df[4].iloc[i] == 0 and df[13].iloc[i] < 0 and df[15].iloc[i] == symbol:
-                volume = df[9].iloc[i]
-                price_sold_at = df[10].iloc[i]
-                loss = df[13].iloc[i]
-                x = calculate_original_price(loss, volume*100000, price_sold_at)
-                x = float(x)
-                for j in range(-20, 20, 1):
-                    x = x + (0.00001 * j)
-                    invalid_resistance_prices.append(x)
+                position_id = int(df[7].iloc[i])
+                data = wrapper.position_histroy(position_id)
+                ask_price = data['price_open'].iloc[0]
+                invalid_resistance_prices.append(ask_price)
 
         print(invalid_resistance_prices)
         print(len(invalid_resistance_prices))
         print(invalid_support_prices)
-
