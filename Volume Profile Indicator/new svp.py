@@ -13,7 +13,7 @@ password = "B!Vp1oYx"
 server = "MetaQuotes-Demo"
 pips = 10
 pips_weightage = 0.0001
-symbol = "EURUSD"
+symbol = "USDCHF"
 buy_tp_ratio = 0.15
 buy_sl_ratio = 0.05
 sell_tp_ratio = 0.15
@@ -21,9 +21,10 @@ sell_sl_ratio = 0.05
 volume = 0.1
 last_days = 3
 multiplier = 1
-tp_sl_ratio = 4
+tp_sl_ratio = 3
 risk_percentage = 0.01
-
+invalid_support_prices = []
+invalid_resistance_prices = []
 
 class svp:
     def __init__(self):
@@ -409,11 +410,11 @@ class svp:
             resistance_box.append(resistance[i])
 
         for i in support_box:
-            if i[3] >= 5:
+            if i[3] >= 5 and i[0] not in invalid_support_prices:
                 filtered_support_box.append(i)
 
         for i in resistance_box:
-            if i[3] >= 5:
+            if i[3] >= 5 and i[0] not in invalid_resistance_prices:
                 filtered_resistance_box.append(i)
 
         return filtered_resistance_box, filtered_support_box
@@ -666,6 +667,19 @@ class MT5Wrapper:
         account_info = mt5.account_info()
         return account_info[13]
 
+    def order_histroy(self):
+        start = datetime(2024,1,1)
+        end = datetime.now() + timedelta(hours=3)
+        deals = mt5.history_deals_get(start,end)
+        df = pd.DataFrame(deals)
+        df_cleaned = df[df[16] != '']
+        # with pd.option_context('display.max_columns', None,'display.max_rows', None):
+        #     print(df_cleaned)
+
+        return df_cleaned
+
+
+
     def shutdown(self):
         """Shutdown the MT5 terminal"""
         mt5.shutdown()
@@ -690,6 +704,11 @@ def get_date_and_past_date(year, month, day, x_days_before):
 
     return given_date.year, given_date.month, given_date.day, past_date.year, past_date.month, past_date.day
 
+def calculate_original_price(total_loss, amount_bought, stoploss_price):
+
+    original_price = (total_loss / amount_bought) + stoploss_price
+    original_price = round(original_price, 5)
+    return original_price
 
 if __name__ == "__main__":
 
@@ -722,6 +741,7 @@ if __name__ == "__main__":
         data['OpenTime'] = pd.to_datetime(data['OpenTime'], unit='s')
         data.set_index("OpenTime", inplace=True)
         data.drop(columns=['spread', 'real_volume'], inplace=True)
+
         lists = obj.make_box(data)
         # with pd.option_context('display.max_rows', None):
         #     print(obj.svp_data)
@@ -731,6 +751,8 @@ if __name__ == "__main__":
         support = lists[1]
 
         temp_resistance = [item for item in resistance if item[0] >= latest_price]
+        print(temp_resistance)
+        print(len(temp_resistance))
         temp_support = [item for item in support if item[0] <= latest_price]
 
         try:
@@ -765,14 +787,14 @@ if __name__ == "__main__":
         trade_size = ((risk_percentage/100) * equity) / ((buy_val - buy_sl)/buy_val)
         qty = trade_size / wrapper.get_latest_close_price(symbol)
         qty /= wrapper.get_symbol_info(symbol)[49] #100,000
-        qty = round(qty,2)
+        qty = round(qty, 2)
 
         if temp_support == []:
             print("No valid price for buying available")
         else:
             buy_order_placed = wrapper.check_order(symbol=symbol, type=2)
             if not buy_order_placed:
-                wrapper.place_order(symbol, "buy", volume=qty, price=buy_val, sl=buy_sl, tp=buy_tp)
+                wrapper.place_order(symbol, "buy", volume=qty, price=buy, sl=buy_sl, tp=buy_tp)
                 buy_order_placed = True
             else:
                 print("A buy order is already open")
@@ -782,14 +804,39 @@ if __name__ == "__main__":
         else:
             sell_order_placed = wrapper.check_order(symbol=symbol, type=3)
             if not sell_order_placed:
-                # print(wrapper.get_latest_close_price(symbol))
-                # print(sell_val)
-                wrapper.place_order(symbol, "sell", volume=1-qty, price=sell_val, sl=sell_sl, tp=sell_tp)
+                wrapper.place_order(symbol, "sell", volume=1-qty, price=sell, sl=sell_sl, tp=sell_tp)
                 sell_order_placed = True
             else:
                 print("A sell order is already open")
 
         print("skip")
 
+        time.sleep(5)
 
-        time.sleep(60)
+        df = wrapper.order_histroy()
+        for i in range(-1, -5, -1):
+            if df[4].iloc[i] == 1 and df[13].iloc[i] < 0 and df[15].iloc[i] == symbol:
+                volume = df[9].iloc[i]
+                price_sold_at = df[10].iloc[i]
+                loss = df[13].iloc[i]
+                x = calculate_original_price(loss, volume, price_sold_at)
+                x = float(x)
+                for j in range(-20, 20, 1):
+                    x = x + (0.00001*j)
+                    invalid_support_prices.append(x)
+            if df[4].iloc[i] == 0 and df[13].iloc[i] < 0 and df[15].iloc[i] == symbol:
+                volume = df[9].iloc[i]
+                price_sold_at = df[10].iloc[i]
+                loss = df[13].iloc[i]
+                x = calculate_original_price(loss, volume*100000, price_sold_at)
+                x = float(x)
+                for j in range(-20, 20, 1):
+                    x = x + (0.00001 * j)
+                    invalid_resistance_prices.append(x)
+
+        print(invalid_resistance_prices)
+        print(len(invalid_resistance_prices))
+        print(invalid_support_prices)
+
+
+        time.sleep(10)
