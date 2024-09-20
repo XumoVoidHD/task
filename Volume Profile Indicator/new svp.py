@@ -5,19 +5,19 @@ import pandas as pd
 from datetime import datetime, timedelta
 import time
 import pytz
-import matplotlib.pyplot as plt
+# import matplotlib.pyplot as plt
 import talib
 
 
 pd.set_option('display.max_columns', 500)
 pd.set_option('display.width', 1500)
 
-acc_id = 5028843863
-password = "B!Vp1oYx"
+acc_id = 86552809
+password = "@mK2UbVh"
 server = "MetaQuotes-Demo"
 pips = 10
 pips_weightage = 0.0001
-symbol = "USDCHF"
+symbol = "EURUSD"
 buy_tp_ratio = 0.15
 buy_sl_ratio = 0.05
 sell_tp_ratio = 0.15
@@ -339,34 +339,34 @@ class svp:
         print("Hour VAL")
         print(self.hour_val_dict)
 
-    def plot(self, data=None, read=False):
-        if read:
-            df = pd.read_excel("C:/Users/vedan/PycharmProjects/task/Volume Profile Indicator/Test17.xlsx")
-        else:
-            df = data
-        plt.figure(figsize=(12, 6))
-        plt.plot(df.index, df['Close'], label='Close', marker='o')
-        plt.plot(df.index, df['VAH (Hourly)'], label='VAH Hourly', linestyle='--')
-        plt.plot(df.index, df['VAL (Hourly)'], label='VAL Hourly', linestyle='--')
-        plt.plot(df.index, df['POC_Price (Hourly)'], label='POC Price Hourly', linestyle='-.')
-        plt.plot(df.index, df['VAH (Timezone)'], label='VAH Timezone', linestyle='--')
-        plt.plot(df.index, df['VAL (Timezone)'], label='VAL Timezone', linestyle='--')
-        plt.plot(df.index, df['Resistance'], label='VAH Timezone', linestyle='--')
-        plt.plot(df.index, df['Support'], label='VAL Timezone', linestyle='--')
-        plt.plot(df.index, df['POC_Price (Timezone)'], label='POC Price Timezone', linestyle='-.')
-        buy_signal = data[data['Buy'] == 1]
-        sell_signal = data[data['Sell'] == 1]
-        plt.scatter(buy_signal.index, buy_signal['Close']+0.2, label='Buy Signal', marker="^", color='green', alpha=1, s=50)
-        plt.scatter(sell_signal.index, sell_signal['Close']-0.2, label='Sell Signal', marker="v", color='red', alpha=1, s=50)
-        plt.fill_between(df.index, df['VAH (Hourly)'], df['VAL (Hourly)'], color='gray', alpha=0.3)
-        plt.fill_between(df.index, df['VAH (Timezone)'], df['VAL (Timezone)'], color='blue', alpha=0.3)
-        plt.fill_between(df.index, df['Resistance'], df['Support'], color='red', alpha=0.3)
-        plt.xlabel('DateTime')
-        plt.ylabel('Price')
-        plt.title('Close, VAH, VAL, and POC Prices')
-        plt.legend()
-        plt.grid(True)
-        plt.show()
+    # def plot(self, data=None, read=False):
+    #     if read:
+    #         df = pd.read_excel("C:/Users/vedan/PycharmProjects/task/Volume Profile Indicator/Test17.xlsx")
+    #     else:
+    #         df = data
+    #     plt.figure(figsize=(12, 6))
+    #     plt.plot(df.index, df['Close'], label='Close', marker='o')
+    #     plt.plot(df.index, df['VAH (Hourly)'], label='VAH Hourly', linestyle='--')
+    #     plt.plot(df.index, df['VAL (Hourly)'], label='VAL Hourly', linestyle='--')
+    #     plt.plot(df.index, df['POC_Price (Hourly)'], label='POC Price Hourly', linestyle='-.')
+    #     plt.plot(df.index, df['VAH (Timezone)'], label='VAH Timezone', linestyle='--')
+    #     plt.plot(df.index, df['VAL (Timezone)'], label='VAL Timezone', linestyle='--')
+    #     plt.plot(df.index, df['Resistance'], label='VAH Timezone', linestyle='--')
+    #     plt.plot(df.index, df['Support'], label='VAL Timezone', linestyle='--')
+    #     plt.plot(df.index, df['POC_Price (Timezone)'], label='POC Price Timezone', linestyle='-.')
+    #     buy_signal = data[data['Buy'] == 1]
+    #     sell_signal = data[data['Sell'] == 1]
+    #     plt.scatter(buy_signal.index, buy_signal['Close']+0.2, label='Buy Signal', marker="^", color='green', alpha=1, s=50)
+    #     plt.scatter(sell_signal.index, sell_signal['Close']-0.2, label='Sell Signal', marker="v", color='red', alpha=1, s=50)
+    #     plt.fill_between(df.index, df['VAH (Hourly)'], df['VAL (Hourly)'], color='gray', alpha=0.3)
+    #     plt.fill_between(df.index, df['VAH (Timezone)'], df['VAL (Timezone)'], color='blue', alpha=0.3)
+    #     plt.fill_between(df.index, df['Resistance'], df['Support'], color='red', alpha=0.3)
+    #     plt.xlabel('DateTime')
+    #     plt.ylabel('Price')
+    #     plt.title('Close, VAH, VAL, and POC Prices')
+    #     plt.legend()
+    #     plt.grid(True)
+    #     plt.show()
 
     def backtest(self):
         capital = 10000
@@ -595,7 +595,6 @@ class MT5Wrapper:
             "price": price,
             "deviation": 20,
             "magic": 100,
-
             "comment": comment,
             "type_time": mt5.ORDER_TIME_GTC,  # Good till cancel
             "type_filling": mt5.ORDER_FILLING_IOC,
@@ -616,6 +615,33 @@ class MT5Wrapper:
             print("Order failed, retcode =", result.retcode)
         else:
             return result
+
+    def modify_order(self, ticket, price, sl, tp, symbol, type):
+        order = self.check_order(symbol, type)
+
+        if order is None:
+            print(f"Order with ticket {ticket} not found. Error code:", mt5.last_error())
+            return False
+
+        modify_request = {
+            "action": mt5.TRADE_ACTION_MODIFY,
+            "symbol": symbol,
+            "order": ticket,
+            "price": price,
+            "sl": sl,
+            "tp": tp,
+            "deviation": 10,
+        }
+
+        result = mt5.order_send(modify_request)
+        print(result)
+
+        if result.retcode != mt5.TRADE_RETCODE_DONE:
+            print(f"Failed to modify order {ticket}. Error code:", result.retcode)
+            return False
+        else:
+            print(f"Order {ticket} modified successfully.")
+            return True
 
     def get_available_balance(self):
         """Get available account balance"""
@@ -661,10 +687,18 @@ class MT5Wrapper:
 
         orders = mt5.orders_get(symbol=symbol)
         for order in orders:
-            if order[6] == type and order[21]:
+            if order.type == type and order.symbol == symbol:
                 return True
 
         return False
+
+    def open_position_ticket(self,symbol, type):
+        orders = mt5.orders_get(symbol=symbol)
+        for order in orders:
+            if order.type == type and order.symbol == symbol:
+                return order.ticket
+
+        return 0
 
     def equity(self):
 
@@ -793,46 +827,52 @@ if __name__ == "__main__":
 
         sell = closest_resistance[0]
         buy = closest_support[0]
+        atr = atr_calc(data)
 
-        buy_val = buy + multiplier * atr_calc(data)
-        buy_sl = buy_val - 2 * atr_calc(data)
+        buy_val = buy + multiplier * atr
+        buy_sl = buy_val - 2 * atr
         risk = buy_val - buy_sl
         buy_tp = buy_val + tp_sl_ratio*risk
 
-        sell_val = sell - multiplier * atr_calc(data)
-        sell_sl = sell_val + 2 * atr_calc(data)
+        sell_val = sell - multiplier * atr
+        sell_sl = sell_val + 2 * atr
         risk = sell_sl - sell_val
         sell_tp = sell_val - tp_sl_ratio * risk
-
 
         trade_size = ((risk_percentage/100) * equity) / ((buy_val - buy_sl)/buy_val)
         qty = trade_size / wrapper.get_latest_close_price(symbol)
         qty /= wrapper.get_symbol_info(symbol)[49] #100,000
-        qty = round(qty, 2)
+        qty = abs(round(qty, 2))
+
+        equal_tp_sl = True
+
+        if equal_tp_sl:
+            buy_sl = buy - (buy_tp - buy)
+            sell_sl = sell + (sell - sell_tp)
 
         if temp_support == []:
             print("No valid price for buying available")
         else:
             buy_order_placed = wrapper.check_order(symbol=symbol, type=2)
             if not buy_order_placed:
-                wrapper.place_order(symbol, "buy", volume=qty, price=buy, sl=buy_sl, tp=buy_tp)
+                temp = wrapper.place_order(symbol, "buy", volume=qty, price=buy, sl=buy_sl, tp=buy_tp)
                 buy_order_placed = True
             else:
-                print("A buy order is already open")
+                wrapper.modify_order(ticket=wrapper.open_position_ticket(symbol, 2), price=buy, sl=buy_sl, tp=buy_tp, symbol=symbol, type="buy")
 
         if temp_resistance == []:
             print("No valid price for selling available")
         else:
             sell_order_placed = wrapper.check_order(symbol=symbol, type=3)
             if not sell_order_placed:
-                wrapper.place_order(symbol, "sell", volume=1-qty, price=sell, sl=sell_sl, tp=sell_tp)
+                temp = wrapper.place_order(symbol, "sell", volume=qty, price=sell, sl=sell_sl+(2*atr), tp=sell_tp)
                 sell_order_placed = True
             else:
-                print("A sell order is already open")
+                wrapper.modify_order(ticket=wrapper.open_position_ticket(symbol, 3), price=sell, sl=sell_sl, tp=sell_tp,symbol=symbol, type="sell")
 
         print("skip")
 
-        time.sleep(60)
+        time.sleep(120)
 
         df = wrapper.order_histroy()
         for i in range(-1, -5, -1):
@@ -847,6 +887,6 @@ if __name__ == "__main__":
                 ask_price = data['price_open'].iloc[0]
                 invalid_resistance_prices.append(ask_price)
 
-        print(invalid_resistance_prices)
-        print(len(invalid_resistance_prices))
-        print(invalid_support_prices)
+        # print(invalid_resistance_prices)
+        # print(len(invalid_resistance_prices))
+        # print(invalid_support_prices)
